@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.kocfleet">
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
         android:name=".app.KocfleetApplication"
         android:allowBackup="true"
@@ -10,7 +11,9 @@
         android:roundIcon="@mipmap/ic_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.KOCFleet">
-        <activity android:name=".ui.activity.AuthenticationActivity"></activity>
+        <activity android:name=".ui.activity.AuthenticationActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.activity.LaunchActivity"
             android:configChanges="orientation"

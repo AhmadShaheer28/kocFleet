@@ -23,6 +23,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void finish(String username, String password) {
                 startActivity(new Intent(AuthenticationActivity.this, MainActivity.class));
+                AuthenticationActivity.this.finish();
             }
         });
 
