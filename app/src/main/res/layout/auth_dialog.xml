@@ -80,7 +80,7 @@
             android:id="@+id/send_btn"
             android:layout_width="@dimen/_150sdp"
             android:layout_height="wrap_content"
-            android:background="@color/purple_200"
+            android:background="@drawable/purple_button_bg_round_corner"
             android:textColor="@color/white"
             android:text="Enter"
             android:layout_marginBottom="@dimen/_10sdp"

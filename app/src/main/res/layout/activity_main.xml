@@ -2,10 +2,46 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
     tools:context=".ui.activity.MainActivity">
 
+    <Button
+        android:id="@+id/boat_condition"
+        android:layout_width="@dimen/_250sdp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/purple_button_bg_round_corner"
+        android:textColor="@color/white"
+        android:textAllCaps="false"
+        android:textSize="@dimen/_12ssp"
+        android:paddingVertical="@dimen/_20sdp"
+        android:text="Boats Conditions"
+        android:layout_marginTop="@dimen/_20sdp" />
 
+    <Button
+        android:id="@+id/boat_certificates"
+        android:layout_width="@dimen/_250sdp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/purple_button_bg_round_corner"
+        android:textColor="@color/white"
+        android:textAllCaps="false"
+        android:textSize="@dimen/_12ssp"
+        android:paddingVertical="@dimen/_20sdp"
+        android:text="Boats Certificates"
+        android:layout_marginTop="@dimen/_20sdp" />
+
+    <Button
+        android:id="@+id/safety_equipments"
+        android:layout_width="@dimen/_250sdp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/purple_button_bg_round_corner"
+        android:textColor="@color/white"
+        android:textAllCaps="false"
+        android:textSize="@dimen/_12ssp"
+        android:paddingVertical="@dimen/_20sdp"
+        android:text="Safety Equipments"
+        android:layout_marginTop="@dimen/_20sdp" />
 
 </LinearLayout>

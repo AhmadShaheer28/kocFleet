@@ -54,7 +54,9 @@ public class AuthDialog extends Dialog {
         btnEnter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(etPassword.getText().toString().isEmpty()) {
+                mDialogResult.finish("", "");
+                dismiss();
+                /*if(etPassword.getText().toString().isEmpty()) {
                     //Utils.showAlert(activity, "Message", "Please enter password.");
                 } else if(etUsername.getText().toString().isEmpty()) {
                     //Utils.showAlert(activity, "Message", "Please enter username.");
@@ -63,7 +65,7 @@ public class AuthDialog extends Dialog {
                         mDialogResult.finish("", "");
                         dismiss();
                     }
-                }
+                }*/
             }
         });
 
