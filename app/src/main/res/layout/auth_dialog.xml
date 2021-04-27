@@ -71,7 +71,7 @@
             app:layout_constraintTop_toBottomOf="@id/email"
             android:layout_marginTop="@dimen/_10sdp"
             android:hint="Enter password"
-            android:inputType="text"
+            android:inputType="textPassword"
             android:textColor="@color/purple_200"
             android:textSize="@dimen/_15ssp" />
 

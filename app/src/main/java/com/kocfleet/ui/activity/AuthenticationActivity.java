@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.kocfleet.R;
 import com.kocfleet.ui.dialog.AuthDialog;
@@ -22,8 +23,15 @@ public class AuthenticationActivity extends AppCompatActivity {
         dialog.setDialogResult(new AuthDialog.OnDialogResult() {
             @Override
             public void finish(String username, String password) {
-                startActivity(new Intent(AuthenticationActivity.this, MainActivity.class));
-                AuthenticationActivity.this.finish();
+                if(username.toUpperCase().equals("FTM") &&
+                    password.equals("2015")) {
+                    startActivity(new Intent(AuthenticationActivity.this, MainActivity.class));
+                    dialog.dismiss();
+                    AuthenticationActivity.this.finish();
+                } else {
+                    Toast.makeText(AuthenticationActivity.this,
+                            "Wrong username or password!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
