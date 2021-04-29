@@ -1,5 +1,6 @@
 package com.kocfleet.ui.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -7,9 +8,13 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.kocfleet.R;
+import com.kocfleet.ui.activity.excel.ExcelMainActivity;
 import com.kocfleet.ui.base.BaseActivity;
+import com.kocfleet.utils.Constants;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,9 +29,7 @@ public class MainActivity extends BaseActivity {
     Button btnBoatCondition;
     Button btnBoatCertificates;
     Button btnSafetyEquipments;
-    ArrayList<List<String>> table;
-    private int mRow = 0;
-    private int mCol = 0;
+    ArrayList<String> cols;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,86 +49,48 @@ public class MainActivity extends BaseActivity {
         btnBoatCondition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                InputStream is =
-                        getApplication().getResources().openRawResource(R.raw.boats_condition);
-                getExcelSize(is);
+                Intent intent = new Intent(MainActivity.this, ExcelMainActivity.class);
+                intent.putExtra(Constants.FILE_PATH, Constants.FILE_PATH_STRING);
+                intent.putExtra(Constants.FILE_NAME, Constants.BOATS_CONDITION);
+                startActivity(intent);
             }
         });
         btnBoatCertificates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                InputStream is =
-                        getApplication().getResources().openRawResource(R.raw.boats_certificates);
-                getExcelSize(is);
+                Intent intent = new Intent(MainActivity.this, ExcelMainActivity.class);
+                intent.putExtra(Constants.FILE_PATH, Constants.FILE_PATH_STRING);
+                intent.putExtra(Constants.FILE_NAME, Constants.BOATS_CERTIFICATES);
+                startActivity(intent);
             }
         });
         btnSafetyEquipments.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                InputStream is =
-                        getApplication().getResources().openRawResource(R.raw.safety_equipment);
-                getExcelSize(is);
+                Intent intent = new Intent(MainActivity.this, ExcelMainActivity.class);
+                intent.putExtra(Constants.FILE_PATH, Constants.FILE_PATH_STRING);
+                intent.putExtra(Constants.FILE_NAME, Constants.SAFETY_EQUIPMENTS);
+                startActivity(intent);
             }
         });
     }
 
     private void getExcelSize(InputStream is) {
-        int col = 0;
+        cols = new ArrayList<>();
         try {
             XSSFWorkbook workbook = new XSSFWorkbook(is);
             XSSFSheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rowIterator = sheet.iterator();
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
+
+            DataFormatter dataFormatter = new DataFormatter();
+            FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+
+            for (Row row : sheet) {
                 Iterator<Cell> cellIterator = row.cellIterator();
-                while (cellIterator.hasNext()) {
-                    col++;
-                }
-            }
-            getExcelSheetData(is, col);
-        } catch (Exception e) {
-            Log.d("MY_READ_XLSX", e.getMessage());
-        }
-    }
-    
-    private void getExcelSheetData(InputStream is, int col) {
-        table = new ArrayList<>(col);
-        for(int i = 0; i < col; i++)  {
-            table.add(new ArrayList<>());
-        }
-        try {
-
-            //Create Workbook instance holding reference to .xlsx file
-            XSSFWorkbook workbook = new XSSFWorkbook(is);
-
-            //Get first/desired sheet from the workbook
-            XSSFSheet sheet = workbook.getSheetAt(0);
-
-            //Iterate through each rows one by one
-            Iterator<Row> rowIterator = sheet.iterator();
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                //For each row, iterate through all the columns
-                Iterator<Cell> cellIterator = row.cellIterator();
-
                 while (cellIterator.hasNext()) {
                     Cell cell = cellIterator.next();
-
-                    //Check the cell type and format accordingly
-                    switch (cell.getCellType()) {
-                        case Cell.CELL_TYPE_BLANK:
-                            table.get(mRow).add("");
-                            break;
-                        case Cell.CELL_TYPE_STRING:
-                            table.get(mRow).add(cell.getStringCellValue());
-                            //Log.d("MY_READ_XLSX", cell.getStringCellValue() + "");
-                            break;
-
-                    }
+                    cols.add(dataFormatter.formatCellValue(cell, formulaEvaluator));
                 }
-                mRow++;
             }
-            Toast.makeText(this, "File read successfully!", Toast.LENGTH_SHORT).show();
             is.close();
         } catch (Exception e) {
             Log.d("MY_READ_XLSX", e.getMessage());
