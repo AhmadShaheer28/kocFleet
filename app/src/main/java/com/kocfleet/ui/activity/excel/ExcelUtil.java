@@ -146,7 +146,7 @@ public class ExcelUtil {
             Toast.makeText(context, "export error" + e, Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     private static Object getCellFormatValue(Cell cell) {
         Object cellValue;
         if (cell != null) {

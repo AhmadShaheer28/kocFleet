@@ -29,7 +29,6 @@ public class MainActivity extends BaseActivity {
     Button btnBoatCondition;
     Button btnBoatCertificates;
     Button btnSafetyEquipments;
-    ArrayList<String> cols;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,28 +72,6 @@ public class MainActivity extends BaseActivity {
                 startActivity(intent);
             }
         });
-    }
-
-    private void getExcelSize(InputStream is) {
-        cols = new ArrayList<>();
-        try {
-            XSSFWorkbook workbook = new XSSFWorkbook(is);
-            XSSFSheet sheet = workbook.getSheetAt(0);
-
-            DataFormatter dataFormatter = new DataFormatter();
-            FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
-
-            for (Row row : sheet) {
-                Iterator<Cell> cellIterator = row.cellIterator();
-                while (cellIterator.hasNext()) {
-                    Cell cell = cellIterator.next();
-                    cols.add(dataFormatter.formatCellValue(cell, formulaEvaluator));
-                }
-            }
-            is.close();
-        } catch (Exception e) {
-            Log.d("MY_READ_XLSX", e.getMessage());
-        }
     }
 
 }
