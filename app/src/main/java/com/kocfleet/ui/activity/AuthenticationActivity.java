@@ -23,7 +23,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         dialog.setDialogResult(new AuthDialog.OnDialogResult() {
             @Override
             public void finish(String username, String password) {
-                if(username.toUpperCase().equals("FTM") &&
+                if(username.equals("FMT") &&
                     password.equals("2015")) {
                     startActivity(new Intent(AuthenticationActivity.this, MainActivity.class));
                     dialog.dismiss();

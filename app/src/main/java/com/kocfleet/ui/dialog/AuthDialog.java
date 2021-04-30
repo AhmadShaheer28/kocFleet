@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 
 import com.kocfleet.R;
+import com.kocfleet.ui.activity.MainActivity;
 
 
 public class AuthDialog extends Dialog {
@@ -48,7 +49,10 @@ public class AuthDialog extends Dialog {
         ivClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                activity.finish();
+                if(MainActivity.instance != null)
+                    dismiss();
+                else
+                    activity.finish();
             }
         });
         btnEnter.setOnClickListener(new View.OnClickListener() {

@@ -4,6 +4,8 @@ public class Constants {
 
     public static String FILE_PATH = "m_filePath";
     public static String FILE_NAME = "m_fileName";
+    public static String FILE_READ = "read";
+    public static String FILE_WRITE = "write";
     public static String FILE_PATH_STRING = "boats_condition.xlsx";
 
     public static String BOATS_CONDITION = "boats_condition";
