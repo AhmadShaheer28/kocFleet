@@ -50,4 +50,6 @@ dependencies {
 
     // BaseRecyclerViewAdapterHelper
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.47'
+
+    implementation 'com.github.duanhong169:drawabletoolbox:1.0.7'
 }

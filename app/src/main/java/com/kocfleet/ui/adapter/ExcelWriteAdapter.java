@@ -1,8 +1,8 @@
-package com.kocfleet.ui.activity.excel;
+package com.kocfleet.ui.adapter;
 
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -10,24 +10,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
-
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.kocfleet.R;
 import com.kocfleet.model.ExcelCellModel;
-import com.kocfleet.ui.RowClickListener;
 
 import java.util.List;
 import java.util.Map;
 
 import top.defaults.drawabletoolbox.DrawableBuilder;
 
-
-public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>, BaseViewHolder> {
-    private RowClickListener delegate;
-    ExcelAdapter(@Nullable List<Map<Integer, ExcelCellModel>> data, RowClickListener delegate) {
+public class ExcelWriteAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>, BaseViewHolder> {
+    public ExcelWriteAdapter(@Nullable List<Map<Integer, ExcelCellModel>> data) {
         super(R.layout.template1_item, data);
-        this.delegate = delegate;
     }
 
     @Override
@@ -39,7 +34,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
                 LinearLayout.LayoutParams.MATCH_PARENT);
 
         for (int i = 0; i < item.size(); i++) {
-            TextView textView = new TextView(mContext);
+            EditText textView = new EditText(mContext);
             textView.setTextSize(13);
             textView.setText(item.get(i).getValue() + "");
             textView.setLayoutParams(layoutParams);
@@ -53,13 +48,6 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
             view.addView(textView);
         }
 
-        helper.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                delegate.onRowClicked(item);
-            }
-        });
-
     }
 
     private Drawable getBackgroundDrawable(String color) {
@@ -68,14 +56,12 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
             //color = color.substring(2);
             drawable = new DrawableBuilder()
                     .rectangle()
-                    .hairlineBordered()
                     .solidColor(Color.parseColor("#" + color))
                     .strokeColor(ContextCompat.getColor(mContext, R.color.grey_level_1))
                     .build();
         } else {
             drawable = new DrawableBuilder()
                     .rectangle()
-                    .hairlineBordered()
                     .solidColor(ContextCompat.getColor(mContext, R.color.white))
                     .strokeColor(ContextCompat.getColor(mContext, R.color.grey_level_1))
                     .build();

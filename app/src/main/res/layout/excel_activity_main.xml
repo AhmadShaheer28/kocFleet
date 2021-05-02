@@ -5,11 +5,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Button
+        android:id="@+id/save_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/purple_button_bg_round_corner"
+        android:textColor="@color/white"
+        android:layout_margin="@dimen/_10sdp"
+        android:visibility="gone"
+        android:text="Save Data"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:paddingTop="@dimen/_10sdp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/save_btn"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.recyclerview.widget.RecyclerView

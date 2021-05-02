@@ -3,7 +3,6 @@ package com.kocfleet.ui.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -14,18 +13,6 @@ import com.kocfleet.ui.base.BaseActivity;
 import com.kocfleet.ui.dialog.ActionDialog;
 import com.kocfleet.ui.dialog.AuthDialog;
 import com.kocfleet.utils.Constants;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class MainActivity extends BaseActivity implements ActionDialog.UserActionDelegate {
 
@@ -78,24 +65,24 @@ public class MainActivity extends BaseActivity implements ActionDialog.UserActio
         });
     }
 
-    private void createIntentForExcel(String path, String fileName) {
+    private void createIntentForExcel(String path, String fileName, String actionString) {
         Intent intent = new Intent(MainActivity.this, ExcelMainActivity.class);
         intent.putExtra(Constants.FILE_PATH, path);
         intent.putExtra(Constants.FILE_NAME, fileName);
+        intent.putExtra(Constants.FILE_ACTION, actionString);
         startActivity(intent);
     }
 
-    private void showAuthenticationDialog() {
+    private void showAuthenticationDialog(String fileName) {
         authDialog = new AuthDialog(this);
         authDialog.show();
         authDialog.setDialogResult(new AuthDialog.OnDialogResult() {
             @Override
             public void finish(String username, String password) {
-                if(username.equals("FMT") &&
-                        password.equals("2015")) {
+                if(username.equals("Kuwait") &&
+                        password.equals("2040")) {
                     authDialog.dismiss();
-                    Toast.makeText(MainActivity.this,
-                            "Not Implemented yet.", Toast.LENGTH_SHORT).show();
+                    createIntentForExcel(Constants.FILE_PATH_STRING, fileName, Constants.FILE_WRITE);
                 } else {
                     Toast.makeText(MainActivity.this,
                             "Wrong username or password!", Toast.LENGTH_SHORT).show();
@@ -107,9 +94,9 @@ public class MainActivity extends BaseActivity implements ActionDialog.UserActio
     @Override
     public void userAction(String action, String fileName) {
         if(action.equals(Constants.FILE_READ)) {
-            createIntentForExcel(Constants.FILE_PATH_STRING, fileName);
+            createIntentForExcel(Constants.FILE_PATH_STRING, fileName, Constants.FILE_READ);
         } else {
-            showAuthenticationDialog();
+            showAuthenticationDialog(fileName);
         }
     }
 
