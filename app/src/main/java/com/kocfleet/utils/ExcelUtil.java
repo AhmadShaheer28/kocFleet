@@ -1,4 +1,4 @@
-package com.kocfleet.ui.activity.excel;
+package com.kocfleet.utils;
 
 import android.content.Context;
 import android.net.Uri;
@@ -8,7 +8,6 @@ import android.widget.Toast;
 import com.kocfleet.R;
 import com.kocfleet.app.KocfleetApplication;
 import com.kocfleet.model.ExcelCellModel;
-import com.kocfleet.utils.Constants;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -16,7 +15,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -84,8 +82,6 @@ public class ExcelUtil {
                     cellModel = new ExcelCellModel();
                     cellModel.setValue(getCellFormatValue(rowHeader.getCell(c)));
                     cellModel.setColor(getCellColorValue(rowHeader.getCell(c)));
-//                    String cellInfo = "header " + "; c:" + c + "; v:" + value;
-//                    Log.i(TAG, "readExcelNew: " + cellInfo);
                     headerMap.put(c, cellModel);
                 }
                 //add  headermap to list
@@ -106,8 +102,6 @@ public class ExcelUtil {
                             cellModel = new ExcelCellModel();
                             cellModel.setValue(getCellFormatValue(row.getCell(j)));
                             cellModel.setColor(getCellColorValue(row.getCell(j)));
-//                            String cellInfo = "r: " + i + "; c:" + j + "; v:" + value;
-//                            Log.i(TAG, "readExcelNew: " + cellInfo);
                             itemMap.put(j, cellModel);
                         }
                     } else {
@@ -119,15 +113,20 @@ public class ExcelUtil {
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, "readExcelNew: import error " + e);
-            //Toast.makeText(context, "import error " + e, Toast.LENGTH_SHORT).show();
         }
         return list;
     }
 
-    public static void writeExcelNew(Context context, List<Map<Integer, Object>> exportExcel, Uri uri) {
+    public static void writeExcelNew(Context context, List<Map<Integer, Object>> exportExcel) {
+        Uri uri = Uri.parse(
+                "android.resource://"
+                        + context.getPackageName()
+                        + "/"
+                        + R.raw.boats_condition
+        );
         try {
             XSSFWorkbook workbook = new XSSFWorkbook();
-            XSSFSheet sheet = workbook.createSheet(WorkbookUtil.createSafeSheetName("Sheet1"));
+            XSSFSheet sheet = workbook.createSheet(WorkbookUtil.createSafeSheetName("boats_condition"));
 
             int colums = exportExcel.get(0).size();
             for (int i = 0; i < colums; i++) {

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "459111645944",
+    "project_id": "koc-fleet",
+    "storage_bucket": "koc-fleet.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:459111645944:android:9021ab7d2a14d345fcb10d",
+        "android_client_info": {
+          "package_name": "com.kocfleet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "459111645944-fut1aj7qv74dfcjrpbea0avojt0sncmk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kocfleet",
+            "certificate_hash": "cc239ed638a865321b63f9745224e8f86133b658"
+          }
+        },
+        {
+          "client_id": "459111645944-sqfr642qtc9jfckqu54l6mf11lb9fu26.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFG0RN3BC7NxmoGgf4PTZ4f3V1YIQCkhU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "459111645944-sqfr642qtc9jfckqu54l6mf11lb9fu26.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

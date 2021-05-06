@@ -12,4 +12,8 @@ public class Constants {
     public static String BOATS_CONDITION = "boats_condition";
     public static String BOATS_CERTIFICATES = "boats_certificates";
     public static String SAFETY_EQUIPMENTS = "safety_equipments";
+
+    public static String CONDITION = "condition";
+    public static String CERTIFICATES = "certificates";
+    public static String EQUIPMENTS = "equipments";
 }
