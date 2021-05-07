@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,10 +15,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.kocfleet.R;
 import com.kocfleet.model.ExcelCellModel;
 import com.kocfleet.ui.RowClickListener;
@@ -28,20 +33,24 @@ import com.kocfleet.utils.ExcelUtil;
 import com.kocfleet.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ExcelMainActivity extends AppCompatActivity implements RowClickListener {
     public static final String TAG = ExcelMainActivity.class.getSimpleName();
     private Context mContext;
-    private List<Map<Integer, ExcelCellModel>> readExcelList = new ArrayList<>();
-    private List<Map<Integer, ExcelCellModel>> clickedExcelList = new ArrayList<>();
+    private List<Map<Integer, String>> readExcelList = new ArrayList<>();
+    private List<Map<Integer, String>> rowList = new ArrayList<>();
+    private List<Map<String, Object>> clickedExcelList = new ArrayList<>();
+    private List<Map<String, String>> saveList = new ArrayList<>();
     private RecyclerView recyclerView;
     private ExcelAdapter excelAdapter;
     private Button saveButton;
     private ExcelWriteAdapter excelWriteAdapter;
     private String action;
     private ProgressDialog mProgressDialog;
+    private String fileName;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 
@@ -67,16 +76,105 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                excelWriteAdapter.saveCodeHere();
+                saveList.clear();
+                saveList.addAll(excelWriteAdapter.saveCodeHere());
+                
+                creatingNewListToSave();
             }
         });
     }
 
+    private void creatingNewListToSave() {
+        showLoading();
+        Map<String, String> map ;
+        for (int j = 0; j < readExcelList.size(); j++) {
+            map = new HashMap<>();
+            int a = 0;
+            if(j < 2) {
+                for(Map.Entry<Integer, String> entry: readExcelList.get(j).entrySet()) {
+                    map.put("cell"+a, entry.getValue());
+                    a++;
+                }
+                saveList.add(j, map);
+            } else {
+                for (Map.Entry<Integer, String> entry : readExcelList.get(j).entrySet()) {
+                    map.put("cell"+a, entry.getValue());
+                    a++;
+                }
+                if(j > (saveList.size()-1))
+                    saveList.add(j, map);
+            }
+
+        }
+        saveToDataBase();
+    }
+
+    private void saveToDataBase() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                hideLoading();
+                finish();
+            }
+        }, 3000);
+        for (int i = 0; i < saveList.size(); i++) {
+            db.collection(fileName).document(fileName+"ROW"+i)
+                    .set(saveList.get(i));
+        }
+
+    }
+
+
     private void initViews() {
         Intent intent = getIntent();
         String path = intent.getStringExtra(Constants.FILE_PATH);
-        String fileName = intent.getStringExtra(Constants.FILE_NAME);
-        importExcelDeal(path, fileName);
+        fileName = intent.getStringExtra(Constants.FILE_NAME);
+        showLoading();
+        db.collection(fileName).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    int j=0;
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        for(QueryDocumentSnapshot doc : task.getResult()) {
+                            if(doc.getId().equals(fileName+"ROW"+j)) {
+                                clickedExcelList.add(doc.getData());
+                            }
+                        }
+                        j++;
+                    }
+                    arrangeDataSequence();
+                } else {
+                    hideLoading();
+                    Toast.makeText(mContext, "Failed to load data", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void arrangeDataSequence() {
+        Map<Integer, String> map ;
+        for (int j = 0; j < clickedExcelList.size(); j++) {
+            map = new HashMap<>();
+            int a = 0;
+            for(Map.Entry<String, Object> entry: clickedExcelList.get(j).entrySet()) {
+                for(Map.Entry<String, Object> entry2: clickedExcelList.get(j).entrySet()) {
+                    if(entry2.getKey().equals("cell" + a)) {
+                        map.put(a, entry2.getValue().toString());
+                        break;
+                    }
+                }
+                a++;
+            }
+            readExcelList.add(map);
+        }
+        clickedExcelList.clear();
+        if(action.equals(Constants.FILE_READ))
+            excelAdapter.notifyDataSetChanged();
+        else
+            excelWriteAdapter.notifyDataSetChanged();
+        hideLoading();
+        Log.d(TAG, "Error getting documents: ");
     }
 
     private void setReadAdapter() {
@@ -95,7 +193,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         recyclerView.setAdapter(excelWriteAdapter);
     }
 
-    private void importExcelDeal(String path, String fileName) {
+    /*private void importExcelDeal(String path, String fileName) {
         new Thread(() -> {
             Log.i(TAG, "doInBackground: Importing...");
             runOnUiThread(this::showLoading);
@@ -117,12 +215,12 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
                 });
             }
         }).start();
-    }
+    }*/
 
     /**
      * refresh RecyclerView
      */
-    private void updateUI() {
+    /*private void updateUI() {
         runOnUiThread(() -> {
             if (readExcelList != null && readExcelList.size() > 0) {
                 if(action.equals(Constants.FILE_READ)) {
@@ -133,15 +231,15 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
             }
         });
-    }
+    }*/
 
     @Override
-    public void onRowClicked(Map<Integer, ExcelCellModel> clickedRow) {
-        if(clickedExcelList.isEmpty()) {
-            clickedExcelList.add(readExcelList.get(0));
-            clickedExcelList.add(readExcelList.get(2));
-            clickedExcelList.add(clickedRow);
-            excelAdapter = new ExcelAdapter(clickedExcelList, this, -1);
+    public void onRowClicked(Map<Integer, String> clickedRow) {
+        if(rowList.isEmpty()) {
+            rowList.add(readExcelList.get(0));
+            rowList.add(readExcelList.get(2));
+            rowList.add(clickedRow);
+            excelAdapter = new ExcelAdapter(rowList, this, -1);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             recyclerView.setNestedScrollingEnabled(false);
             recyclerView.setAdapter(excelAdapter);
@@ -150,7 +248,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
     @Override
     public void onColumnCLicked(int position) {
-        clickedExcelList.add(readExcelList.get(position));
+        rowList.add(readExcelList.get(position));
         excelAdapter = new ExcelAdapter(readExcelList, this, position);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
@@ -159,8 +257,8 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
     @Override
     public void onBackPressed() {
-        if(clickedExcelList != null && !clickedExcelList.isEmpty()) {
-            clickedExcelList = new ArrayList<>();
+        if(rowList != null && !rowList.isEmpty()) {
+            rowList.clear();
             setReadAdapter();
         } else {
             super.onBackPressed();

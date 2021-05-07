@@ -50,21 +50,21 @@ public class MainActivity extends BaseActivity implements ActionDialog.UserActio
         btnBoatCondition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialog = new ActionDialog(context, Constants.BOATS_CONDITION, MainActivity.this);
+                dialog = new ActionDialog(context, Constants.CONDITION, MainActivity.this);
                 dialog.show();
             }
         });
         btnBoatCertificates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialog = new ActionDialog(context, Constants.BOATS_CERTIFICATES, MainActivity.this);
+                dialog = new ActionDialog(context, Constants.CERTIFICATES, MainActivity.this);
                 dialog.show();
             }
         });
         btnSafetyEquipments.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialog = new ActionDialog(context, Constants.SAFETY_EQUIPMENTS, MainActivity.this);
+                dialog = new ActionDialog(context, Constants.EQUIPMENTS, MainActivity.this);
                 dialog.show();
             }
         });
