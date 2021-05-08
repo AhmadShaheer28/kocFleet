@@ -1,5 +1,6 @@
 package com.kocfleet.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -7,6 +8,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,8 +19,13 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import com.kocfleet.R;
 import com.kocfleet.ui.RowClickListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import top.defaults.drawabletoolbox.DrawableBuilder;
 
@@ -27,6 +34,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
     private RowClickListener delegate;
     List<Map<Integer, String>> data;
     private int isColumnClick;
+    private String regDate = "[a-zA-Z]*-[0-9]{2}";
 
     private int selectedColor = 0;
     private String[] colors = new String[]{ "#eefdec", "#c7c7c7", "#f0b099", "#afb3e9" };
@@ -107,6 +115,18 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                         mColor = colors[selectedColor%4];
                         textView.setBackground(getBackgroundDrawable(mColor));
                     }
+                    if(Objects.requireNonNull(item.get(i)).matches(regDate)) {
+                        @SuppressLint("SimpleDateFormat")
+                        SimpleDateFormat formatter = new SimpleDateFormat("MMM-dd");
+                        Date date = null;
+                        try {
+                            date = formatter.parse(Objects.requireNonNull(item.get(i)));
+                        } catch (ParseException e) {
+                        }
+                        if(matchDates(date) < 1) {
+                            textView.setBackground(getBackgroundDrawable("#FFFF0000"));
+                        }
+                    }
                     view.addView(textView);
                 }
             }
@@ -160,6 +180,18 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                 view.addView(textView);
         }
 
+    }
+
+    private int matchDates(Date date) {
+        Date currentDate = new Date();
+        Calendar calDate = Calendar.getInstance();
+        Calendar calCurrDate = Calendar.getInstance();
+        calDate.setTime(date);
+        calCurrDate.setTime(currentDate);
+
+        int m1 = calDate.get(Calendar.MONTH) - calCurrDate.get(Calendar.MONTH);
+
+        return m1;
     }
 
     private Drawable getBackgroundDrawable(String color) {

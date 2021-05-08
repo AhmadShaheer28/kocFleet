@@ -174,7 +174,6 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         else
             excelWriteAdapter.notifyDataSetChanged();
         hideLoading();
-        Log.d(TAG, "Error getting documents: ");
     }
 
     private void setReadAdapter() {
@@ -192,46 +191,6 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setAdapter(excelWriteAdapter);
     }
-
-    /*private void importExcelDeal(String path, String fileName) {
-        new Thread(() -> {
-            Log.i(TAG, "doInBackground: Importing...");
-            runOnUiThread(this::showLoading);
-
-            List<Map<Integer, ExcelCellModel>> readExcelNew = ExcelUtil.readExcelNew(mContext, path, fileName);
-
-            Log.i(TAG, "onActivityResult:readExcelNew " + ((readExcelNew != null) ? readExcelNew.size() : ""));
-
-            if (readExcelNew != null && readExcelNew.size() > 0) {
-                readExcelList.clear();
-                readExcelList.addAll(readExcelNew);
-                runOnUiThread(this::hideLoading);
-                updateUI();
-                Log.i(TAG, "run: successfully imported");
-            } else {
-                runOnUiThread(() -> {
-                    hideLoading();
-                    Toast.makeText(mContext, "no data", Toast.LENGTH_SHORT).show();
-                });
-            }
-        }).start();
-    }*/
-
-    /**
-     * refresh RecyclerView
-     */
-    /*private void updateUI() {
-        runOnUiThread(() -> {
-            if (readExcelList != null && readExcelList.size() > 0) {
-                if(action.equals(Constants.FILE_READ)) {
-                    excelAdapter.notifyDataSetChanged();
-                } else {
-                    excelWriteAdapter.notifyDataSetChanged();
-                }
-
-            }
-        });
-    }*/
 
     @Override
     public void onRowClicked(Map<Integer, String> clickedRow) {

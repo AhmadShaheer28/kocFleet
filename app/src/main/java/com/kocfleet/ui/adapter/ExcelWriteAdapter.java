@@ -1,5 +1,6 @@
 package com.kocfleet.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -20,10 +21,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.kocfleet.R;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import top.defaults.drawabletoolbox.DrawableBuilder;
 
@@ -33,6 +39,10 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
     int etSize = 0;
     int dataSize = 0;
     Context mContext;
+    private int selectedColor = 0;
+    private String regDate = "[a-zA-Z]*-[0-9]{2}";
+    private final String[] colors = new String[]{ "#eefdec", "#c7c7c7", "#f0b099", "#afb3e9" };
+    private String mColor = colors[selectedColor];
 
     public ExcelWriteAdapter(@Nullable List<Map<Integer, String>> data, Context context) {
         this.data = data;
@@ -69,6 +79,17 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
         return exportExcel;
     }
 
+    private int matchDates(Date date) {
+        Date currentDate = new Date();
+        Calendar calDate = Calendar.getInstance();
+        Calendar calCurrDate = Calendar.getInstance();
+        calDate.setTime(date);
+        calCurrDate.setTime(currentDate);
+
+        int m1 = calDate.get(Calendar.MONTH) - calCurrDate.get(Calendar.MONTH);
+
+        return m1;
+    }
 
     private boolean checkValue(Map<String, String> value, List<Map<String, String>> exportExcel) {
         for (Map.Entry<String, String> entry : exportExcel.get(exportExcel.size()-1).entrySet()) {
@@ -126,6 +147,33 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                     editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
                 else
                     editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFFFF"));
+                if (i == 0) {
+                    editTexts.get(etSize).setBackground(getBackgroundDrawable("#cbf7c7"));
+                }
+                if(position == 2) {
+                    if(i != 0) {
+                        editTexts.get(etSize).setBackground(getBackgroundDrawable("#4169E1"));
+                    }
+                }
+                if(i == 1 || i == 2) {
+                    if(!item.get(2).equals("") && i != 2) {
+                        selectedColor = selectedColor + 1;
+                    }
+                    mColor = colors[selectedColor%4];
+                    editTexts.get(etSize).setBackground(getBackgroundDrawable(mColor));
+                }
+                if(Objects.requireNonNull(item.get(i)).matches(regDate)) {
+                    @SuppressLint("SimpleDateFormat")
+                    SimpleDateFormat formatter = new SimpleDateFormat("MMM-dd");
+                    Date date = null;
+                    try {
+                        date = formatter.parse(Objects.requireNonNull(item.get(i)));
+                    } catch (ParseException e) {
+                    }
+                    if(matchDates(date) < 1) {
+                        editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
+                    }
+                }
                 view.addView(editTexts.get(etSize));
                 etSize += 1;
             }
