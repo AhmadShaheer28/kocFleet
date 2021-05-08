@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 
@@ -16,6 +17,7 @@ public class ActionDialog extends Dialog {
 
     private Button btnRead;
     private Button btnWrite;
+    private ImageView btnClose;
     private Context context;
     private String fileName;
     private UserActionDelegate delegate;
@@ -36,6 +38,7 @@ public class ActionDialog extends Dialog {
 
         btnRead = findViewById(R.id.read_btn);
         btnWrite = findViewById(R.id.write_btn);
+        btnClose = findViewById(R.id.close);
 
         clickListeners();
     }
@@ -52,6 +55,12 @@ public class ActionDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 delegate.userAction(Constants.FILE_WRITE, fileName);
+                dismiss();
+            }
+        });
+        btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 dismiss();
             }
         });
