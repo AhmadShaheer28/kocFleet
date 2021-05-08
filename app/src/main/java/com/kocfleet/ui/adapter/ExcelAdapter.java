@@ -28,6 +28,12 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
     List<Map<Integer, String>> data;
     private int isColumnClick;
 
+    private int selectedColor = 0;
+    private String[] colors = new String[]{ "#eefdec", "#c7c7c7", "#f0b099", "#afb3e9" };
+    private String[] hColors = new String[]{ "#f0b099", "#afb3e9" };
+    private String mColor = colors[selectedColor];
+    private String mHColor = hColors[selectedColor];
+
     public ExcelAdapter(@Nullable List<Map<Integer, String>> data, RowClickListener delegate, int isColumnClick) {
         super(R.layout.template1_item, data);
         this.delegate = delegate;
@@ -53,7 +59,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                 textView.setText(item.get(0) + "");
                 textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
                 textView.setPadding(10, 10, 10, 10);
-                //textView.setBackground(getBackgroundDrawable(item.get(0).getColor()));
+                textView.setBackground(getBackgroundDrawable("#FFFFFF"));
                 view.addView(textView);
             } else {
                 for (int i = 0; i < item.size(); i++) {
@@ -70,7 +76,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                         textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                     else
                         textView.setBackground(getBackgroundDrawable("#FFFFFF"));
-                    view.addView(textView);
+
                     if (helper.getLayoutPosition() == 2) {
                         int finalI = i;
                         textView.setOnClickListener(new View.OnClickListener() {
@@ -81,6 +87,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                         });
                     }
                     if (i == 0) {
+                        textView.setBackground(getBackgroundDrawable("#cbf7c7"));
                         helper.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -88,10 +95,21 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                             }
                         });
                     }
+                    if(helper.getLayoutPosition() == 2) {
+                        if(i != 0) {
+                            textView.setBackground(getBackgroundDrawable("#4169E1"));
+                        }
+                    }
+                    if(i == 1 || i == 2) {
+                        if(!item.get(2).equals("") && i != 2) {
+                            selectedColor = selectedColor + 1;
+                        }
+                        mColor = colors[selectedColor%4];
+                        textView.setBackground(getBackgroundDrawable(mColor));
+                    }
+                    view.addView(textView);
                 }
             }
-
-
         } else {
 
             for (int i = 0; i < 3; i++) {
@@ -108,6 +126,22 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                     textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                 else
                     textView.setBackground(getBackgroundDrawable("#FFFFFF"));
+
+                if (i == 0) {
+                    textView.setBackground(getBackgroundDrawable("#cbf7c7"));
+                }
+                if(helper.getLayoutPosition() == 2) {
+                    if(i != 0) {
+                        textView.setBackground(getBackgroundDrawable("#4169E1"));
+                    }
+                }
+                if(i == 1 || i == 2) {
+                    if(!item.get(2).equals("") && i != 2) {
+                        selectedColor = selectedColor + 1;
+                    }
+                    mColor = colors[selectedColor%4];
+                    textView.setBackground(getBackgroundDrawable(mColor));
+                }
                 view.addView(textView);
             }
             TextView textView = new TextView(mContext);

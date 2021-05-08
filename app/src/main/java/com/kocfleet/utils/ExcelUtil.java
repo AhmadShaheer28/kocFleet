@@ -49,14 +49,14 @@ public class ExcelUtil {
             return null;
         }
         extString = filePath.substring(filePath.lastIndexOf("."));
-        InputStream is;
+        InputStream is = null;
         try {
-            if(fileName.equals(Constants.BOATS_CONDITION))
+            /*if(fileName.equals(Constants.BOATS_CONDITION))
                 is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.boats_condition);
             else if(fileName.equals(Constants.BOATS_CERTIFICATES))
                 is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.boats_certificates);
             else
-                is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.safety_equipment);
+                is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.safety_equipment);*/
             Log.i(TAG, "readExcel: " + extString);
             if (".xls".equals(extString)) {
                 wb = new HSSFWorkbook(is);
@@ -118,12 +118,7 @@ public class ExcelUtil {
     }
 
     public static void writeExcelNew(Context context, List<Map<Integer, Object>> exportExcel) {
-        Uri uri = Uri.parse(
-                "android.resource://"
-                        + context.getPackageName()
-                        + "/"
-                        + R.raw.boats_condition
-        );
+        Uri uri = null;
         try {
             XSSFWorkbook workbook = new XSSFWorkbook();
             XSSFSheet sheet = workbook.createSheet(WorkbookUtil.createSafeSheetName("boats_condition"));

@@ -237,6 +237,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     public void onRowClicked(Map<Integer, String> clickedRow) {
         if(rowList.isEmpty()) {
             rowList.add(readExcelList.get(0));
+            rowList.add(readExcelList.get(1));
             rowList.add(readExcelList.get(2));
             rowList.add(clickedRow);
             excelAdapter = new ExcelAdapter(rowList, this, -1);
