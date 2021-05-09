@@ -8,7 +8,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,11 +33,11 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
     private RowClickListener delegate;
     List<Map<Integer, String>> data;
     private int isColumnClick;
-    private String regDate = "[a-zA-Z]*-[0-9]{2}";
+    private String regDate = "[0-9]{2}-[0-9]{2}-[0-9]{2}";
 
     private int selectedColor = 0;
-    private String[] colors = new String[]{ "#eefdec", "#c7c7c7", "#f0b099", "#afb3e9" };
-    private String[] hColors = new String[]{ "#f0b099", "#afb3e9" };
+    private String[] colors = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
+    private String[] hColors = new String[]{"#f0b099", "#afb3e9"};
     private String mColor = colors[selectedColor];
     private String mHColor = hColors[selectedColor];
 
@@ -103,27 +102,27 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                             }
                         });
                     }
-                    if(helper.getLayoutPosition() == 2) {
-                        if(i != 0) {
+                    if (helper.getLayoutPosition() == 2) {
+                        if (i != 0) {
                             textView.setBackground(getBackgroundDrawable("#4169E1"));
                         }
                     }
-                    if(i == 1 || i == 2) {
-                        if(!item.get(2).equals("") && i != 2) {
+                    if (i == 1 || i == 2) {
+                        if (!item.get(2).equals("") && i != 2) {
                             selectedColor = selectedColor + 1;
                         }
-                        mColor = colors[selectedColor%4];
+                        mColor = colors[selectedColor % 4];
                         textView.setBackground(getBackgroundDrawable(mColor));
                     }
-                    if(Objects.requireNonNull(item.get(i)).matches(regDate)) {
+                    if (Objects.requireNonNull(item.get(i)).matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
-                        SimpleDateFormat formatter = new SimpleDateFormat("MMM-dd");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
                         Date date = null;
                         try {
                             date = formatter.parse(Objects.requireNonNull(item.get(i)));
                         } catch (ParseException e) {
                         }
-                        if(matchDates(date) < 1) {
+                        if (matchDates(date) < 1) {
                             textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                         }
                     }
@@ -150,16 +149,16 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                 if (i == 0) {
                     textView.setBackground(getBackgroundDrawable("#cbf7c7"));
                 }
-                if(helper.getLayoutPosition() == 2) {
-                    if(i != 0) {
+                if (helper.getLayoutPosition() == 2) {
+                    if (i != 0) {
                         textView.setBackground(getBackgroundDrawable("#4169E1"));
                     }
                 }
-                if(i == 1 || i == 2) {
-                    if(!item.get(2).equals("") && i != 2) {
+                if (i == 1 || i == 2) {
+                    if (!item.get(2).equals("") && i != 2) {
                         selectedColor = selectedColor + 1;
                     }
-                    mColor = colors[selectedColor%4];
+                    mColor = colors[selectedColor % 4];
                     textView.setBackground(getBackgroundDrawable(mColor));
                 }
                 view.addView(textView);
@@ -177,7 +176,19 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                 textView.setBackground(getBackgroundDrawable("#FFFF0000"));
             else
                 textView.setBackground(getBackgroundDrawable("#FFFFFF"));
-                view.addView(textView);
+            if (Objects.requireNonNull(item.get(isColumnClick)).matches(regDate)) {
+                @SuppressLint("SimpleDateFormat")
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
+                Date date = null;
+                try {
+                    date = formatter.parse(Objects.requireNonNull(item.get(isColumnClick)));
+                } catch (ParseException e) {
+                }
+                if (matchDates(date) < 1) {
+                    textView.setBackground(getBackgroundDrawable("#FFFF0000"));
+                }
+            }
+            view.addView(textView);
         }
 
     }
@@ -189,9 +200,10 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
         calDate.setTime(date);
         calCurrDate.setTime(currentDate);
 
-        int m1 = calDate.get(Calendar.MONTH) - calCurrDate.get(Calendar.MONTH);
+        int m1 = calCurrDate.get(Calendar.YEAR) * 12 + calCurrDate.get(Calendar.MONTH);
+        int m2 = calDate.get(Calendar.YEAR) * 12 + calDate.get(Calendar.MONTH);
 
-        return m1;
+        return m2 - m1;
     }
 
     private Drawable getBackgroundDrawable(String color) {

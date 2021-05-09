@@ -40,7 +40,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
     int dataSize = 0;
     Context mContext;
     private int selectedColor = 0;
-    private String regDate = "[a-zA-Z]*-[0-9]{2}";
+    private String regDate = "[0-9]{2}-[0-9]{2}-[0-9]{2}";
     private final String[] colors = new String[]{ "#eefdec", "#c7c7c7", "#f0b099", "#afb3e9" };
     private String mColor = colors[selectedColor];
 
@@ -86,9 +86,10 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
         calDate.setTime(date);
         calCurrDate.setTime(currentDate);
 
-        int m1 = calDate.get(Calendar.MONTH) - calCurrDate.get(Calendar.MONTH);
+        int m1 = calCurrDate.get(Calendar.YEAR) * 12 + calCurrDate.get(Calendar.MONTH);
+        int m2 = calDate.get(Calendar.YEAR) * 12 + calDate.get(Calendar.MONTH);
 
-        return m1;
+        return m2 - m1;
     }
 
     private boolean checkValue(Map<String, String> value, List<Map<String, String>> exportExcel) {
@@ -164,7 +165,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                 }
                 if(Objects.requireNonNull(item.get(i)).matches(regDate)) {
                     @SuppressLint("SimpleDateFormat")
-                    SimpleDateFormat formatter = new SimpleDateFormat("MMM-dd");
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
                     Date date = null;
                     try {
                         date = formatter.parse(Objects.requireNonNull(item.get(i)));

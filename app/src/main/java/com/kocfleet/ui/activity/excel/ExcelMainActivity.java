@@ -1,10 +1,11 @@
 package com.kocfleet.ui.activity.excel;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,20 +17,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.kocfleet.R;
-import com.kocfleet.model.ExcelCellModel;
 import com.kocfleet.ui.RowClickListener;
 import com.kocfleet.ui.adapter.ExcelAdapter;
 import com.kocfleet.ui.adapter.ExcelWriteAdapter;
 import com.kocfleet.utils.Constants;
-import com.kocfleet.utils.ExcelUtil;
 import com.kocfleet.utils.Utils;
 
 import java.util.ArrayList;
@@ -40,6 +36,7 @@ import java.util.Map;
 public class ExcelMainActivity extends AppCompatActivity implements RowClickListener {
     public static final String TAG = ExcelMainActivity.class.getSimpleName();
     private Context mContext;
+    String regex = "[0-9]+";
     private List<Map<Integer, String>> readExcelList = new ArrayList<>();
     private List<Map<Integer, String>> rowList = new ArrayList<>();
     private List<Map<String, Object>> clickedExcelList = new ArrayList<>();
@@ -65,7 +62,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         Intent intent = getIntent();
         action = intent.getStringExtra(Constants.FILE_ACTION);
 
-        if(action.equals(Constants.FILE_READ)) {
+        if (action.equals(Constants.FILE_READ)) {
             setReadAdapter();
         } else {
             setWriteAdapter();
@@ -76,54 +73,14 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                showLoading();
                 saveList.clear();
                 saveList.addAll(excelWriteAdapter.saveCodeHere());
-                
-                creatingNewListToSave();
+                if (saveList != null && !saveList.isEmpty())
+                    new ProcessAndSaveData().execute();
             }
         });
     }
-
-    private void creatingNewListToSave() {
-        showLoading();
-        Map<String, String> map ;
-        for (int j = 0; j < readExcelList.size(); j++) {
-            map = new HashMap<>();
-            int a = 0;
-            if(j < 2) {
-                for(Map.Entry<Integer, String> entry: readExcelList.get(j).entrySet()) {
-                    map.put("cell"+a, entry.getValue());
-                    a++;
-                }
-                saveList.add(j, map);
-            } else {
-                for (Map.Entry<Integer, String> entry : readExcelList.get(j).entrySet()) {
-                    map.put("cell"+a, entry.getValue());
-                    a++;
-                }
-                if(j > (saveList.size()-1))
-                    saveList.add(j, map);
-            }
-
-        }
-        saveToDataBase();
-    }
-
-    private void saveToDataBase() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                hideLoading();
-                finish();
-            }
-        }, 3000);
-        for (int i = 0; i < saveList.size(); i++) {
-            db.collection(fileName).document(fileName+"ROW"+i)
-                    .set(saveList.get(i));
-        }
-
-    }
-
 
     private void initViews() {
         Intent intent = getIntent();
@@ -134,10 +91,10 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    int j=0;
+                    int j = 0;
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        for(QueryDocumentSnapshot doc : task.getResult()) {
-                            if(doc.getId().equals(fileName+"ROW"+j)) {
+                        for (QueryDocumentSnapshot doc : task.getResult()) {
+                            if (doc.getId().equals(fileName + "ROW" + j)) {
                                 clickedExcelList.add(doc.getData());
                             }
                         }
@@ -153,13 +110,13 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     }
 
     private void arrangeDataSequence() {
-        Map<Integer, String> map ;
+        Map<Integer, String> map;
         for (int j = 0; j < clickedExcelList.size(); j++) {
             map = new HashMap<>();
             int a = 0;
-            for(Map.Entry<String, Object> entry: clickedExcelList.get(j).entrySet()) {
-                for(Map.Entry<String, Object> entry2: clickedExcelList.get(j).entrySet()) {
-                    if(entry2.getKey().equals("cell" + a)) {
+            for (Map.Entry<String, Object> entry : clickedExcelList.get(j).entrySet()) {
+                for (Map.Entry<String, Object> entry2 : clickedExcelList.get(j).entrySet()) {
+                    if (entry2.getKey().equals("cell" + a)) {
                         map.put(a, entry2.getValue().toString());
                         break;
                     }
@@ -169,7 +126,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             readExcelList.add(map);
         }
         clickedExcelList.clear();
-        if(action.equals(Constants.FILE_READ))
+        if (action.equals(Constants.FILE_READ))
             excelAdapter.notifyDataSetChanged();
         else
             excelWriteAdapter.notifyDataSetChanged();
@@ -194,10 +151,13 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
     @Override
     public void onRowClicked(Map<Integer, String> clickedRow) {
-        if(rowList.isEmpty()) {
+        if (rowList.isEmpty()) {
             rowList.add(readExcelList.get(0));
             rowList.add(readExcelList.get(1));
             rowList.add(readExcelList.get(2));
+            if (fileName.equals(Constants.EQUIPMENTS) || fileName.equals(Constants.CERTIFICATES)) {
+                rowList.add(readExcelList.get(3));
+            }
             rowList.add(clickedRow);
             excelAdapter = new ExcelAdapter(rowList, this, -1);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -217,7 +177,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
     @Override
     public void onBackPressed() {
-        if(rowList != null && !rowList.isEmpty()) {
+        if (rowList != null && !rowList.isEmpty()) {
             rowList.clear();
             setReadAdapter();
         } else {
@@ -235,4 +195,84 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         hideLoading();
         mProgressDialog = Utils.showLoadingDialog(this);
     }
+
+    @SuppressLint("StaticFieldLeak")
+    private class ProcessAndSaveData extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            creatingNewListToSave();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            hideLoading();
+            finish();
+        }
+
+        private void creatingNewListToSave() {
+            Map<String, String> map;
+            for (int j = 0; j < readExcelList.size(); j++) {
+                map = new HashMap<>();
+                int a = 0;
+                if (j < 2) {
+                    for (Map.Entry<Integer, String> entry : readExcelList.get(j).entrySet()) {
+                        map.put("cell" + a, entry.getValue());
+                        a++;
+                    }
+                    saveList.add(j, map);
+                } else {
+                    for (Map.Entry<Integer, String> entry : readExcelList.get(j).entrySet()) {
+                        map.put("cell" + a, entry.getValue());
+                        a++;
+                    }
+                    if (j > (saveList.size() - 1))
+                        saveList.add(j, map);
+                }
+            }
+            if (fileName.equals(Constants.EQUIPMENTS)) {
+                saveTotalQuantity();
+            }
+            saveToDataBase();
+        }
+
+        private void saveTotalQuantity() {
+            int col = 3;
+            for (int i = 3; i < saveList.get(0).size(); i++) {
+                int number = 0;
+                for (int j = 4; j < saveList.size() - 1; j++) {
+                    Map<String, String> mMap = saveList.get(j);
+                    for (Map.Entry<String, String> entry : mMap.entrySet()) {
+                        if (entry.getKey().equals("cell" + col) && entry.getValue().matches(regex)) {
+                            number += Integer.parseInt(entry.getValue());
+                            break;
+                        }
+                    }
+                }
+                replaceTotalQuantityValue(col, number);
+                col++;
+                Log.d(TAG, "saveTotalQuantity: " + number);
+            }
+        }
+
+        private void replaceTotalQuantityValue(int col, int number) {
+            for (Map.Entry<String, String> entry : saveList.get(saveList.size() - 1).entrySet()) {
+                if (entry.getKey().equals("cell" + col)) {
+                    entry.setValue(number + "");
+                    break;
+                }
+            }
+        }
+
+        private void saveToDataBase() {
+            for (int i = 0; i < saveList.size(); i++) {
+                db.collection(fileName).document(fileName + "ROW" + i)
+                        .set(saveList.get(i));
+            }
+        }
+
+    }
+
 }
