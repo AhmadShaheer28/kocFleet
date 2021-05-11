@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.kocfleet.R;
+import com.kocfleet.model.ExcelCellModel;
 import com.kocfleet.ui.RowClickListener;
 import com.kocfleet.ui.adapter.ExcelAdapter;
 import com.kocfleet.ui.adapter.ExcelWriteAdapter;
@@ -38,9 +40,10 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     private Context mContext;
     String regex = "[0-9]+";
     private List<Map<Integer, String>> readExcelList = new ArrayList<>();
-    private List<Map<Integer, String>> rowList = new ArrayList<>();
+    private List<Map<Integer, ExcelCellModel>> rowList = new ArrayList<>();
     private List<Map<String, Object>> clickedExcelList = new ArrayList<>();
     private List<Map<String, String>> saveList = new ArrayList<>();
+    private List<Map<Integer, ExcelCellModel>> finalExcelList = new ArrayList<>();
     private RecyclerView recyclerView;
     private ExcelAdapter excelAdapter;
     private Button saveButton;
@@ -49,6 +52,9 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     private ProgressDialog mProgressDialog;
     private String fileName;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private int selectedColor = 0;
+    private String[] colors = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
+    private String mColor = colors[selectedColor];
 
 
     @Override
@@ -77,10 +83,82 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
                 saveList.clear();
                 saveList.addAll(excelWriteAdapter.saveCodeHere());
                 if (saveList != null && !saveList.isEmpty())
-                    new ProcessAndSaveData().execute();
+                    creatingNewListToSave();
             }
         });
     }
+
+    /* Writing methods start  */
+
+    private void creatingNewListToSave() {
+        Map<String, String> map;
+        for (int j = 0; j < readExcelList.size(); j++) {
+            map = new HashMap<>();
+            int a = 0;
+            if (j < 2) {
+                for (Map.Entry<Integer, String> entry : readExcelList.get(j).entrySet()) {
+                    map.put("cell" + a, entry.getValue());
+                    a++;
+                }
+                saveList.add(j, map);
+            } else {
+                for (Map.Entry<Integer, String> entry : readExcelList.get(j).entrySet()) {
+                    map.put("cell" + a, entry.getValue());
+                    a++;
+                }
+                if (j > (saveList.size() - 1))
+                    saveList.add(j, map);
+            }
+        }
+        if (fileName.equals(Constants.EQUIPMENTS)) {
+            saveTotalQuantity();
+        }
+        saveToDataBase();
+    }
+
+    private void saveTotalQuantity() {
+        int col = 3;
+        for (int i = 3; i < saveList.get(0).size(); i++) {
+            int number = 0;
+            for (int j = 4; j < saveList.size() - 1; j++) {
+                Map<String, String> mMap = saveList.get(j);
+                for (Map.Entry<String, String> entry : mMap.entrySet()) {
+                    if (entry.getKey().equals("cell" + col) && entry.getValue().matches(regex)) {
+                        number += Integer.parseInt(entry.getValue());
+                        break;
+                    }
+                }
+            }
+            replaceTotalQuantityValue(col, number);
+            col++;
+            Log.d(TAG, "saveTotalQuantity: " + number);
+        }
+    }
+
+    private void replaceTotalQuantityValue(int col, int number) {
+        for (Map.Entry<String, String> entry : saveList.get(saveList.size() - 1).entrySet()) {
+            if (entry.getKey().equals("cell" + col)) {
+                entry.setValue(number + "");
+                break;
+            }
+        }
+    }
+
+    private void saveToDataBase() {
+        for (int i = 0; i < saveList.size(); i++) {
+            db.collection(fileName).document(fileName + "ROW" + i)
+                    .set(saveList.get(i));
+        }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                hideLoading();
+                finish();
+            }
+        }, 2000);
+    }
+
+    /* Writing methods end  */
 
     private void initViews() {
         Intent intent = getIntent();
@@ -126,6 +204,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             readExcelList.add(map);
         }
         clickedExcelList.clear();
+        addColorsToList();
         if (action.equals(Constants.FILE_READ))
             excelAdapter.notifyDataSetChanged();
         else
@@ -133,30 +212,63 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         hideLoading();
     }
 
+    private void addColorsToList() {
+        Map<Integer, ExcelCellModel> map ;
+        Map<Integer, String> map2 ;
+        ExcelCellModel model ;
+        for (int i = 0; i < readExcelList.size(); i++) {
+            map = new HashMap<>();
+            map2 = readExcelList.get(i);
+            for (int j=0; j<readExcelList.get(i).size(); j++) {
+                model = new ExcelCellModel();
+                if (j == 1 || j == 2) {
+                    if (j != 2 && !map2.get(2).equals("")) {
+                        selectedColor = selectedColor + 1;
+                    }
+                    mColor = colors[selectedColor % 4];
+                    model.setColor(mColor);
+                }
+                else {
+                    model.setColor("#FFFFFF");
+                }
+                if (j == 0) {
+                    model.setColor("#cbf7c7");
+                }
+                if (i == 2) {
+                    if (i != 0) {
+                        model.setColor("#4169E1");
+                    }
+                }
+                model.setValue(map2.get(j)+"");
+                map.put(j, model);
+            }
+            finalExcelList.add(map);
+        }
+    }
+
     private void setReadAdapter() {
         saveButton.setVisibility(View.GONE);
-        excelAdapter = new ExcelAdapter(readExcelList, this, -1);
+        excelAdapter = new ExcelAdapter(finalExcelList, this, -1);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setAdapter(excelAdapter);
     }
 
     private void setWriteAdapter() {
-        saveButton.setVisibility(View.VISIBLE);
-        excelWriteAdapter = new ExcelWriteAdapter(readExcelList, this);
+        excelWriteAdapter = new ExcelWriteAdapter(finalExcelList, this, this, false);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setAdapter(excelWriteAdapter);
     }
 
     @Override
-    public void onRowClicked(Map<Integer, String> clickedRow) {
+    public void onRowClicked(Map<Integer, ExcelCellModel> clickedRow) {
         if (rowList.isEmpty()) {
-            rowList.add(readExcelList.get(0));
-            rowList.add(readExcelList.get(1));
-            rowList.add(readExcelList.get(2));
+            rowList.add(finalExcelList.get(0));
+            rowList.add(finalExcelList.get(1));
+            rowList.add(finalExcelList.get(2));
             if (fileName.equals(Constants.EQUIPMENTS) || fileName.equals(Constants.CERTIFICATES)) {
-                rowList.add(readExcelList.get(3));
+                rowList.add(finalExcelList.get(3));
             }
             rowList.add(clickedRow);
             excelAdapter = new ExcelAdapter(rowList, this, -1);
@@ -167,9 +279,27 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     }
 
     @Override
+    public void onWriteRowClicked(Map<Integer, ExcelCellModel> clickedRow) {
+        saveButton.setVisibility(View.VISIBLE);
+        if (rowList.isEmpty()) {
+            rowList.add(finalExcelList.get(0));
+            rowList.add(finalExcelList.get(1));
+            rowList.add(finalExcelList.get(2));
+            if (fileName.equals(Constants.EQUIPMENTS) || fileName.equals(Constants.CERTIFICATES)) {
+                rowList.add(finalExcelList.get(3));
+            }
+            rowList.add(clickedRow);
+            excelWriteAdapter = new ExcelWriteAdapter(rowList, this, this, true);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            recyclerView.setNestedScrollingEnabled(false);
+            recyclerView.setAdapter(excelWriteAdapter);
+        }
+    }
+
+    @Override
     public void onColumnCLicked(int position) {
-        rowList.add(readExcelList.get(position));
-        excelAdapter = new ExcelAdapter(readExcelList, this, position);
+        rowList.add(finalExcelList.get(position));
+        excelAdapter = new ExcelAdapter(finalExcelList, this, position);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setAdapter(excelAdapter);
@@ -179,7 +309,11 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     public void onBackPressed() {
         if (rowList != null && !rowList.isEmpty()) {
             rowList.clear();
-            setReadAdapter();
+            if (action.equals(Constants.FILE_READ)) {
+                setReadAdapter();
+            } else {
+                setWriteAdapter();
+            }
         } else {
             super.onBackPressed();
         }
@@ -194,85 +328,6 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     public void showLoading() {
         hideLoading();
         mProgressDialog = Utils.showLoadingDialog(this);
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private class ProcessAndSaveData extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            creatingNewListToSave();
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            hideLoading();
-            finish();
-        }
-
-        private void creatingNewListToSave() {
-            Map<String, String> map;
-            for (int j = 0; j < readExcelList.size(); j++) {
-                map = new HashMap<>();
-                int a = 0;
-                if (j < 2) {
-                    for (Map.Entry<Integer, String> entry : readExcelList.get(j).entrySet()) {
-                        map.put("cell" + a, entry.getValue());
-                        a++;
-                    }
-                    saveList.add(j, map);
-                } else {
-                    for (Map.Entry<Integer, String> entry : readExcelList.get(j).entrySet()) {
-                        map.put("cell" + a, entry.getValue());
-                        a++;
-                    }
-                    if (j > (saveList.size() - 1))
-                        saveList.add(j, map);
-                }
-            }
-            if (fileName.equals(Constants.EQUIPMENTS)) {
-                saveTotalQuantity();
-            }
-            saveToDataBase();
-        }
-
-        private void saveTotalQuantity() {
-            int col = 3;
-            for (int i = 3; i < saveList.get(0).size(); i++) {
-                int number = 0;
-                for (int j = 4; j < saveList.size() - 1; j++) {
-                    Map<String, String> mMap = saveList.get(j);
-                    for (Map.Entry<String, String> entry : mMap.entrySet()) {
-                        if (entry.getKey().equals("cell" + col) && entry.getValue().matches(regex)) {
-                            number += Integer.parseInt(entry.getValue());
-                            break;
-                        }
-                    }
-                }
-                replaceTotalQuantityValue(col, number);
-                col++;
-                Log.d(TAG, "saveTotalQuantity: " + number);
-            }
-        }
-
-        private void replaceTotalQuantityValue(int col, int number) {
-            for (Map.Entry<String, String> entry : saveList.get(saveList.size() - 1).entrySet()) {
-                if (entry.getKey().equals("cell" + col)) {
-                    entry.setValue(number + "");
-                    break;
-                }
-            }
-        }
-
-        private void saveToDataBase() {
-            for (int i = 0; i < saveList.size(); i++) {
-                db.collection(fileName).document(fileName + "ROW" + i)
-                        .set(saveList.get(i));
-            }
-        }
-
     }
 
 }

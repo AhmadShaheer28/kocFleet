@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.kocfleet.R;
+import com.kocfleet.model.ExcelCellModel;
 import com.kocfleet.ui.RowClickListener;
 
 import java.text.ParseException;
@@ -29,9 +30,9 @@ import java.util.Objects;
 import top.defaults.drawabletoolbox.DrawableBuilder;
 
 
-public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseViewHolder> {
+public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>, BaseViewHolder> {
     private RowClickListener delegate;
-    List<Map<Integer, String>> data;
+    List<Map<Integer, ExcelCellModel>> data;
     private int isColumnClick;
     private String regDate = "[0-9]{2}-[0-9]{2}-[0-9]{2}";
 
@@ -41,7 +42,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
     private String mColor = colors[selectedColor];
     private String mHColor = hColors[selectedColor];
 
-    public ExcelAdapter(@Nullable List<Map<Integer, String>> data, RowClickListener delegate, int isColumnClick) {
+    public ExcelAdapter(@Nullable List<Map<Integer, ExcelCellModel>> data, RowClickListener delegate, int isColumnClick) {
         super(R.layout.template1_item, data);
         this.delegate = delegate;
         this.data = data;
@@ -49,7 +50,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
     }
 
     @Override
-    protected void convert(@NonNull BaseViewHolder helper, Map<Integer, String> item) {
+    protected void convert(@NonNull BaseViewHolder helper, Map<Integer, ExcelCellModel> item) {
         LinearLayout view = (LinearLayout) helper.itemView;
         view.removeAllViews();
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
@@ -63,10 +64,10 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                 textView.setGravity(Gravity.CENTER);
                 textView.setTextColor(ContextCompat.getColor(mContext, R.color.blue));
                 textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
-                textView.setText(item.get(0) + "");
+                textView.setText(item.get(0).getValue());
                 textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
                 textView.setPadding(10, 10, 10, 10);
-                textView.setBackground(getBackgroundDrawable("#FFFFFF"));
+                textView.setBackground(getBackgroundDrawable("#ffffff"));
                 view.addView(textView);
             } else {
                 for (int i = 0; i < item.size(); i++) {
@@ -74,15 +75,15 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                     textView.setTextSize(13);
                     textView.setGravity(Gravity.CENTER);
                     textView.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                    textView.setText(item.get(i) + "");
+                    textView.setText(item.get(i).getValue());
                     textView.setLayoutParams(layoutParams);
                     textView.setPadding(10, 10, 10, 10);
-                    if (item.get(i).toLowerCase().equals("in commision") || item.get(i).equals("Ok") || item.get(i).equals("OK"))
+                    if (item.get(i).getValue().toLowerCase().equals("in commision") || item.get(i).getValue().equals("Ok") || item.get(i).getValue().equals("OK"))
                         textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-                    else if (item.get(i).toLowerCase().equals("out of commision") || item.get(i).equals("Not Ok"))
+                    else if (item.get(i).getValue().toLowerCase().equals("out of commision") || item.get(i).getValue().equals("Not Ok"))
                         textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                     else
-                        textView.setBackground(getBackgroundDrawable("#FFFFFF"));
+                        textView.setBackground(getBackgroundDrawable(item.get(i).getColor()));
 
                     if (helper.getLayoutPosition() == 2) {
                         int finalI = i;
@@ -93,33 +94,19 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                             }
                         });
                     }
-                    if (i == 0) {
-                        textView.setBackground(getBackgroundDrawable("#cbf7c7"));
-                        helper.itemView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                delegate.onRowClicked(item);
-                            }
-                        });
-                    }
-                    if (helper.getLayoutPosition() == 2) {
-                        if (i != 0) {
-                            textView.setBackground(getBackgroundDrawable("#4169E1"));
+                    helper.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            delegate.onRowClicked(item);
                         }
-                    }
-                    if (i == 1 || i == 2) {
-                        if (!item.get(2).equals("") && i != 2) {
-                            selectedColor = selectedColor + 1;
-                        }
-                        mColor = colors[selectedColor % 4];
-                        textView.setBackground(getBackgroundDrawable(mColor));
-                    }
-                    if (Objects.requireNonNull(item.get(i)).matches(regDate)) {
+                    });
+
+                    if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
                         Date date = null;
                         try {
-                            date = formatter.parse(Objects.requireNonNull(item.get(i)));
+                            date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));
                         } catch (ParseException e) {
                         }
                         if (matchDates(date) < 1) {
@@ -136,31 +123,16 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
                 textView.setTextSize(13);
                 textView.setGravity(Gravity.CENTER);
                 textView.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                textView.setText(item.get(i) + "");
+                textView.setText(item.get(i).getValue());
                 textView.setLayoutParams(layoutParams);
                 textView.setPadding(10, 10, 10, 10);
-                if (item.get(i).toUpperCase().equals("IN COMMISION") || item.get(i).toUpperCase().equals("OK"))
+                if (item.get(i).getValue().toUpperCase().equals("IN COMMISION") || item.get(i).getValue().toUpperCase().equals("OK"))
                     textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-                else if (item.get(i).toUpperCase().equals("OUT OF COMMISION") || item.get(i).toUpperCase().equals("NOT OK"))
+                else if (item.get(i).getValue().toUpperCase().equals("OUT OF COMMISION") || item.get(i).getValue().toUpperCase().equals("NOT OK"))
                     textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                 else
-                    textView.setBackground(getBackgroundDrawable("#FFFFFF"));
+                    textView.setBackground(getBackgroundDrawable(item.get(i).getColor()));
 
-                if (i == 0) {
-                    textView.setBackground(getBackgroundDrawable("#cbf7c7"));
-                }
-                if (helper.getLayoutPosition() == 2) {
-                    if (i != 0) {
-                        textView.setBackground(getBackgroundDrawable("#4169E1"));
-                    }
-                }
-                if (i == 1 || i == 2) {
-                    if (!item.get(2).equals("") && i != 2) {
-                        selectedColor = selectedColor + 1;
-                    }
-                    mColor = colors[selectedColor % 4];
-                    textView.setBackground(getBackgroundDrawable(mColor));
-                }
                 view.addView(textView);
             }
             TextView textView = new TextView(mContext);
@@ -170,18 +142,18 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, String>, BaseVie
             textView.setText(item.get(isColumnClick) + "");
             textView.setLayoutParams(layoutParams);
             textView.setPadding(10, 10, 10, 10);
-            if (item.get(isColumnClick).toUpperCase().equals("IN COMMISION") || item.get(isColumnClick).toUpperCase().equals("OK"))
+            if (item.get(isColumnClick).getValue().toUpperCase().equals("IN COMMISION") || item.get(isColumnClick).getValue().toUpperCase().equals("OK"))
                 textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-            else if (item.get(isColumnClick).toUpperCase().equals("OUT OF COMMISION") || item.get(isColumnClick).toUpperCase().equals("NOT OK"))
+            else if (item.get(isColumnClick).getValue().toUpperCase().equals("OUT OF COMMISION") || item.get(isColumnClick).getValue().toUpperCase().equals("NOT OK"))
                 textView.setBackground(getBackgroundDrawable("#FFFF0000"));
             else
                 textView.setBackground(getBackgroundDrawable("#FFFFFF"));
-            if (Objects.requireNonNull(item.get(isColumnClick)).matches(regDate)) {
+            if (Objects.requireNonNull(item.get(isColumnClick)).getValue().matches(regDate)) {
                 @SuppressLint("SimpleDateFormat")
                 SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
                 Date date = null;
                 try {
-                    date = formatter.parse(Objects.requireNonNull(item.get(isColumnClick)));
+                    date = formatter.parse(Objects.requireNonNull(item.get(isColumnClick).getValue()));
                 } catch (ParseException e) {
                 }
                 if (matchDates(date) < 1) {
