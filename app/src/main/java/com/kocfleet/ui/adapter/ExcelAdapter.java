@@ -78,7 +78,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
                     textView.setText(item.get(i).getValue());
                     textView.setLayoutParams(layoutParams);
                     textView.setPadding(10, 10, 10, 10);
-                    if (item.get(i).getValue().toLowerCase().equals("in commision") || item.get(i).getValue().equals("Ok") || item.get(i).getValue().equals("OK"))
+                    if (item.get(i).getValue().toLowerCase().equals("in commision") || item.get(i).getValue().toUpperCase().equals("OK"))
                         textView.setBackground(getBackgroundDrawable("#FF00FF00"));
                     else if (item.get(i).getValue().toLowerCase().equals("out of commision") || item.get(i).getValue().equals("Not Ok"))
                         textView.setBackground(getBackgroundDrawable("#FFFF0000"));
@@ -139,7 +139,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
             textView.setTextSize(13);
             textView.setGravity(Gravity.CENTER);
             textView.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-            textView.setText(item.get(isColumnClick) + "");
+            textView.setText(item.get(isColumnClick).getValue());
             textView.setLayoutParams(layoutParams);
             textView.setPadding(10, 10, 10, 10);
             if (item.get(isColumnClick).getValue().toUpperCase().equals("IN COMMISION") || item.get(isColumnClick).getValue().toUpperCase().equals("OK"))
@@ -147,7 +147,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
             else if (item.get(isColumnClick).getValue().toUpperCase().equals("OUT OF COMMISION") || item.get(isColumnClick).getValue().toUpperCase().equals("NOT OK"))
                 textView.setBackground(getBackgroundDrawable("#FFFF0000"));
             else
-                textView.setBackground(getBackgroundDrawable("#FFFFFF"));
+                textView.setBackground(getBackgroundDrawable(item.get(isColumnClick).getColor()));
             if (Objects.requireNonNull(item.get(isColumnClick)).getValue().matches(regDate)) {
                 @SuppressLint("SimpleDateFormat")
                 SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");

@@ -95,7 +95,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
         return m2 - m1;
     }
 
-    private boolean checkValue(Map<String, String> value, List<Map<String, String>> exportExcel) {
+    /*private boolean checkValue(Map<String, String> value, List<Map<String, String>> exportExcel) {
         for (Map.Entry<String, String> entry : exportExcel.get(exportExcel.size() - 1).entrySet()) {
             if (entry.getKey().equals("cell0")) {
                 for (Map.Entry<String, String> entry2 : value.entrySet()) {
@@ -109,7 +109,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
             }
         }
         return false;
-    }
+    }*/
 
     @NonNull
     @Override
@@ -151,12 +151,23 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                     textView.setText(item.get(i).getValue());
                     textView.setLayoutParams(layoutParams);
                     textView.setPadding(10, 10, 10, 10);
-                    if (item.get(i).getValue().toLowerCase().equals("in commision") || item.get(i).getValue().equals("Ok") || item.get(i).getValue().equals("OK"))
+                    if (item.get(i).getValue().toLowerCase().equals("in commision") || item.get(i).getValue().toUpperCase().equals("OK"))
                         textView.setBackground(getBackgroundDrawable("#FF00FF00"));
                     else if (item.get(i).getValue().toLowerCase().equals("out of commision") || item.get(i).getValue().equals("Not Ok"))
                         textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                     else
                         textView.setBackground(getBackgroundDrawable(item.get(i).getColor()));
+                    if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
+                        @SuppressLint("SimpleDateFormat")
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
+                        Date date = null;
+                        try {
+                            date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));
+                        } catch (ParseException e) { }
+                        if (matchDates(date) < 1) {
+                            textView.setBackground(getBackgroundDrawable("#FFFF0000"));
+                        }
+                    }
                     view.addView(textView);
                 } else {
                     editTexts.add(new EditText(mContext));
@@ -173,27 +184,26 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                     else
                         editTexts.get(etSize).setBackground(getBackgroundDrawable(item.get(i).getColor()));
 
-                    view.addView(editTexts.get(etSize));
-                }
-
-                if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
-                    @SuppressLint("SimpleDateFormat")
-                    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
-                    Date date = null;
-                    try {
-                        date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));
-                    } catch (ParseException e) { }
-                    if (matchDates(date) < 1) {
-                        editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
+                    if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
+                        @SuppressLint("SimpleDateFormat")
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
+                        Date date = null;
+                        try {
+                            date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));
+                        } catch (ParseException e) { }
+                        if (matchDates(date) < 1) {
+                            editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
+                        }
                     }
-                }
 
-                etSize += 1;
+                    view.addView(editTexts.get(etSize));
+                    etSize += 1;
+                }
             }
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    delegate.onWriteRowClicked(item);
+                    delegate.onWriteRowClicked(item, position);
                 }
             });
         }
