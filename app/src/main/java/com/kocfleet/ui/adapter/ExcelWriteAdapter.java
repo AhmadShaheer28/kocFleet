@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.kocfleet.R;
 import com.kocfleet.model.ExcelCellModel;
 import com.kocfleet.ui.RowClickListener;
+import com.kocfleet.utils.Constants;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -44,7 +45,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
     boolean isEditable;
 
     private String numFormat = "^[0-9]*$";
-    private String regDate = "[0-9]{2}-[0-9]{2}-[0-9]{2}";
+    private String regDate = "[0-9]{2}-^[a-zA-Z]*$-[0-9]{2}";
 
     public ExcelWriteAdapter(@Nullable List<Map<Integer, ExcelCellModel>> data, Context context, RowClickListener delegate, boolean isEditable) {
         this.data = data;
@@ -151,15 +152,16 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                     textView.setText(item.get(i).getValue());
                     textView.setLayoutParams(layoutParams);
                     textView.setPadding(10, 10, 10, 10);
-                    if (item.get(i).getValue().toLowerCase().equals("in commision") || item.get(i).getValue().toUpperCase().equals("OK"))
+                    if (item.get(i).getValue().toLowerCase().equals("in commission") || item.get(i).getValue().toUpperCase().equals("OK"))
                         textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-                    else if (item.get(i).getValue().toLowerCase().equals("out of commision") || item.get(i).getValue().equals("Not Ok"))
+                    else if (item.get(i).getValue().toLowerCase().equals("out of commission") || item.get(i).getValue().toLowerCase().equals("not ok") || item.get(i).getValue().toLowerCase().equals("empty"))
                         textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                     else
                         textView.setBackground(getBackgroundDrawable(item.get(i).getColor()));
+
                     if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
                         Date date = null;
                         try {
                             date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));
@@ -177,16 +179,16 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                     editTexts.get(etSize).setText(item.get(i).getValue(), TextView.BufferType.EDITABLE);
                     editTexts.get(etSize).setLayoutParams(layoutParams);
                     editTexts.get(etSize).setPadding(10, 10, 10, 10);
-                    if (item.get(i).getValue().toUpperCase().equals("IN COMMISION") || item.get(i).getValue().toUpperCase().equals("OK"))
+                    if (item.get(i).getValue().toUpperCase().equals("IN COMMISSION") || item.get(i).getValue().toUpperCase().equals("OK"))
                         editTexts.get(etSize).setBackground(getBackgroundDrawable("#FF00FF00"));
-                    else if (item.get(i).getValue().toUpperCase().equals("OUT OF COMMISION") || item.get(i).getValue().toUpperCase().equals("NOT OK"))
+                    else if (item.get(i).getValue().toUpperCase().equals("OUT OF COMMISSION") || item.get(i).getValue().toUpperCase().equals("NOT OK") || item.get(i).getValue().toLowerCase().equals("empty"))
                         editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
                     else
                         editTexts.get(etSize).setBackground(getBackgroundDrawable(item.get(i).getColor()));
 
                     if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
                         Date date = null;
                         try {
                             date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));

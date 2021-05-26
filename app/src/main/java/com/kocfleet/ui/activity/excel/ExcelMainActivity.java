@@ -28,6 +28,7 @@ import com.kocfleet.ui.RowClickListener;
 import com.kocfleet.ui.adapter.ExcelAdapter;
 import com.kocfleet.ui.adapter.ExcelWriteAdapter;
 import com.kocfleet.utils.Constants;
+import com.kocfleet.utils.ExcelUtil;
 import com.kocfleet.utils.Utils;
 
 import java.util.ArrayList;
@@ -67,8 +68,11 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         recyclerView = findViewById(R.id.excel_content_rv);
         saveButton = findViewById(R.id.save_btn);
 
+        //importExcelDeal(".xlsx", "");
+
         Intent intent = getIntent();
         action = intent.getStringExtra(Constants.FILE_ACTION);
+        fileName = intent.getStringExtra(Constants.FILE_NAME);
 
         if (action.equals(Constants.FILE_READ)) {
             setReadAdapter();
@@ -102,27 +106,13 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
                 a++;
             }
             if(j == selectedRowPosition) {
-                if (fileName.equals(Constants.EQUIPMENTS) || fileName.equals(Constants.CERTIFICATES))
+                if (fileName.equals(Constants.EQUIPMENTS))
                     saveList.add(j, editedList.get(2));
                 else
                     saveList.add(j, editedList.get(1));
             }
             else
                 saveList.add(j, map);
-            /*if (j < 2) {
-                for (Map.Entry<Integer, ExcelCellModel> entry : finalExcelList.get(j).entrySet()) {
-                    map.put("cell" + a, entry.getValue().getValue());
-                    a++;
-                }
-                saveList.add(j, map);
-            } else {
-                for (Map.Entry<Integer, ExcelCellModel> entry : finalExcelList.get(j).entrySet()) {
-                    map.put("cell" + a, entry.getValue().getValue());
-                    a++;
-                }
-                if (j > (saveList.size() - 1))
-                    saveList.add(j, map);
-            }*/
         }
         if (fileName.equals(Constants.EQUIPMENTS)) {
             saveTotalQuantity();
@@ -175,9 +165,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     /* Writing methods end  */
 
     private void initViews() {
-        Intent intent = getIntent();
-        String path = intent.getStringExtra(Constants.FILE_PATH);
-        fileName = intent.getStringExtra(Constants.FILE_NAME);
+
         showLoading();
         db.collection(fileName).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -200,6 +188,27 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             }
         });
     }
+
+    /*private void importExcelDeal(String path, String fileName) {
+        new Thread(() -> {
+
+            List<Map<String, String>> readExcelNew = ExcelUtil.readExcelNew(mContext, path, fileName);
+
+
+            if (readExcelNew != null && readExcelNew.size() > 0) {
+                for (int i = 0; i < readExcelNew.size(); i++) {
+                    db.collection("equipments").document("equipmentsROW"+i).set(readExcelNew.get(i));
+                }
+
+                Log.i(TAG, "run: successfully imported");
+            } else {
+                runOnUiThread(() -> {
+                    hideLoading();
+                    Toast.makeText(mContext, "no data", Toast.LENGTH_SHORT).show();
+                });
+            }
+        }).start();
+    }*/
 
     private void arrangeDataSequence() {
         Map<Integer, String> map;
@@ -248,10 +257,8 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
                 if (j == 0) {
                     model.setColor("#cbf7c7");
                 }
-                if (i == 2) {
-                    if (i != 0) {
-                        model.setColor("#4169E1");
-                    }
+                if (i == 2 && !fileName.equals(Constants.CERTIFICATES)) {
+                    model.setColor("#4169E1");
                 }
                 model.setValue(map2.get(j)+"");
                 map.put(j, model);
@@ -262,7 +269,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
     private void setReadAdapter() {
         saveButton.setVisibility(View.GONE);
-        excelAdapter = new ExcelAdapter(finalExcelList, this, -1);
+        excelAdapter = new ExcelAdapter(finalExcelList, this, -1, fileName);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setAdapter(excelAdapter);
@@ -286,7 +293,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
                 rowList.add(finalExcelList.get(3));
             }
             rowList.add(clickedRow);
-            excelAdapter = new ExcelAdapter(rowList, this, -1);
+            excelAdapter = new ExcelAdapter(rowList, this, -1, fileName);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             recyclerView.setNestedScrollingEnabled(false);
             recyclerView.setAdapter(excelAdapter);
@@ -301,7 +308,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             rowList.add(finalExcelList.get(0));
             rowList.add(finalExcelList.get(1));
             rowList.add(finalExcelList.get(2));
-            if (fileName.equals(Constants.EQUIPMENTS) || fileName.equals(Constants.CERTIFICATES)) {
+            if (fileName.equals(Constants.EQUIPMENTS)) {
                 rowList.add(finalExcelList.get(3));
             }
             rowList.add(clickedRow);
@@ -315,7 +322,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     @Override
     public void onColumnCLicked(int position) {
         rowList.add(finalExcelList.get(position));
-        excelAdapter = new ExcelAdapter(finalExcelList, this, position);
+        excelAdapter = new ExcelAdapter(finalExcelList, this, position, fileName);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setAdapter(excelAdapter);

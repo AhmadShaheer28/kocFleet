@@ -37,8 +37,8 @@ public class ExcelUtil {
     private static DataFormatter dataFormatter = new DataFormatter();
     private static FormulaEvaluator formulaEvaluator;
 
-    public static List<Map<Integer, ExcelCellModel>> readExcelNew(Context context, String filePath, String fileName) {
-        List<Map<Integer, ExcelCellModel>> list = null;
+    public static List<Map<String, String>> readExcelNew(Context context, String filePath, String fileName) {
+        List<Map<String, String>> list = null;
         Workbook wb;
         if (filePath == null) {
             return null;
@@ -51,12 +51,13 @@ public class ExcelUtil {
         extString = filePath.substring(filePath.lastIndexOf("."));
         InputStream is = null;
         try {
-            /*if(fileName.equals(Constants.BOATS_CONDITION))
-                is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.boats_condition);
-            else if(fileName.equals(Constants.BOATS_CERTIFICATES))
+            //if(fileName.equals(Constants.BOATS_CONDITION))
+            /*else if(fileName.equals(Constants.BOATS_CERTIFICATES))
                 is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.boats_certificates);
             else
                 is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.safety_equipment);*/
+            is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.safety_equipments);
+
             Log.i(TAG, "readExcel: " + extString);
             if (".xls".equals(extString)) {
                 wb = new HSSFWorkbook(is);
@@ -76,13 +77,13 @@ public class ExcelUtil {
                 int cellsCount = rowHeader.getLastCellNum();
 
                 //store header to the map
-                Map<Integer, ExcelCellModel> headerMap = new HashMap<>();
+                Map<String, String> headerMap = new HashMap<>();
                 ExcelCellModel cellModel;
                 for (int c = 0; c < cellsCount; c++) {
                     cellModel = new ExcelCellModel();
                     cellModel.setValue(getCellFormatValue(rowHeader.getCell(c)));
                     cellModel.setColor(getCellColorValue(rowHeader.getCell(c)));
-                    headerMap.put(c, cellModel);
+                    headerMap.put("cell"+c, getCellFormatValue(rowHeader.getCell(c)));
                 }
                 //add  headermap to list
                 list.add(headerMap);
@@ -96,13 +97,13 @@ public class ExcelUtil {
                 for (int i = 1; i < rownum; i++) {
                     Row row = sheet.getRow(i);
                     //storing subcontent
-                    Map<Integer, ExcelCellModel> itemMap = new HashMap<>();
+                    Map<String, String> itemMap = new HashMap<>();
                     if (row != null) {
                         for (int j = 0; j < colnum; j++) {
                             cellModel = new ExcelCellModel();
                             cellModel.setValue(getCellFormatValue(row.getCell(j)));
                             cellModel.setColor(getCellColorValue(row.getCell(j)));
-                            itemMap.put(j, cellModel);
+                            itemMap.put("cell"+j, getCellFormatValue(row.getCell(j)));
                         }
                     } else {
                         break;
