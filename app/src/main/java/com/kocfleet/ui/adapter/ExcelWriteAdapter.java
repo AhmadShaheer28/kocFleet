@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.kocfleet.R;
 import com.kocfleet.model.ExcelCellModel;
 import com.kocfleet.ui.RowClickListener;
-import com.kocfleet.utils.Constants;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,13 +37,10 @@ import top.defaults.drawabletoolbox.DrawableBuilder;
 public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.ViewHolder> {
     List<EditText> editTexts = new ArrayList<>();
     List<Map<Integer, ExcelCellModel>> data;
-    private RowClickListener delegate;
+    private final RowClickListener delegate;
     int etSize = 0;
     Context mContext;
     boolean isEditable;
-
-    private String numFormat = "^[0-9]*$";
-    private String regDate = "[0-9]{2}-^[a-zA-Z]*$-[0-9]{2}";
 
     public ExcelWriteAdapter(@Nullable List<Map<Integer, ExcelCellModel>> data, Context context, RowClickListener delegate, boolean isEditable) {
         this.data = data;
@@ -137,35 +132,39 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
             textView.setGravity(Gravity.CENTER);
             textView.setTextColor(ContextCompat.getColor(mContext, R.color.blue));
             textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
-            textView.setText(item.get(0).getValue());
+            textView.setText(Objects.requireNonNull(item.get(0)).getValue());
             textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
             textView.setPadding(10, 10, 10, 10);
             textView.setBackground(getBackgroundDrawable("#FFFFFF"));
             view.addView(textView);
         } else {
             for (int i = 0; i < item.size(); i++) {
+                String regDate = "[0-9]{2}-[0-9]{2}-[0-9]{2}";
                 if(!isEditable) {
                     TextView textView = new TextView(mContext);
                     textView.setTextSize(13);
                     textView.setGravity(Gravity.CENTER);
                     textView.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                    textView.setText(item.get(i).getValue());
+                    textView.setText(Objects.requireNonNull(item.get(i)).getValue());
                     textView.setLayoutParams(layoutParams);
                     textView.setPadding(10, 10, 10, 10);
-                    if (item.get(i).getValue().toLowerCase().equals("in commission") || item.get(i).getValue().toUpperCase().equals("OK"))
+                    if (Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("in commission")
+                            || Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("OK"))
                         textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-                    else if (item.get(i).getValue().toLowerCase().equals("out of commission") || item.get(i).getValue().toLowerCase().equals("not ok") || item.get(i).getValue().toLowerCase().equals("empty"))
+                    else if (Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("out of commission")
+                            || Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("not ok")
+                            || Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("empty"))
                         textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                     else
-                        textView.setBackground(getBackgroundDrawable(item.get(i).getColor()));
+                        textView.setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(i)).getColor()));
 
                     if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
                         Date date = null;
                         try {
-                            date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));
-                        } catch (ParseException e) { }
+                            date = formatter.parse(Objects.requireNonNull(Objects.requireNonNull(item.get(i)).getValue()));
+                        } catch (ParseException ignored) { }
                         if (matchDates(date) < 1) {
                             textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                         }
@@ -176,23 +175,26 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                     editTexts.get(etSize).setTextSize(13);
                     editTexts.get(etSize).setGravity(Gravity.CENTER);
                     editTexts.get(etSize).setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                    editTexts.get(etSize).setText(item.get(i).getValue(), TextView.BufferType.EDITABLE);
+                    editTexts.get(etSize).setText(Objects.requireNonNull(item.get(i)).getValue(), TextView.BufferType.EDITABLE);
                     editTexts.get(etSize).setLayoutParams(layoutParams);
                     editTexts.get(etSize).setPadding(10, 10, 10, 10);
-                    if (item.get(i).getValue().toUpperCase().equals("IN COMMISSION") || item.get(i).getValue().toUpperCase().equals("OK"))
+                    if (Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("IN COMMISSION")
+                            || Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("OK"))
                         editTexts.get(etSize).setBackground(getBackgroundDrawable("#FF00FF00"));
-                    else if (item.get(i).getValue().toUpperCase().equals("OUT OF COMMISSION") || item.get(i).getValue().toUpperCase().equals("NOT OK") || item.get(i).getValue().toLowerCase().equals("empty"))
+                    else if (Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("OUT OF COMMISSION")
+                            || Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("NOT OK")
+                            || Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("empty"))
                         editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
                     else
-                        editTexts.get(etSize).setBackground(getBackgroundDrawable(item.get(i).getColor()));
+                        editTexts.get(etSize).setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(i)).getColor()));
 
                     if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
                         Date date = null;
                         try {
-                            date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));
-                        } catch (ParseException e) { }
+                            date = formatter.parse(Objects.requireNonNull(item.get(i)).getValue());
+                        } catch (ParseException ignored) { }
                         if (matchDates(date) < 1) {
                             editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
                         }
@@ -202,12 +204,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                     etSize += 1;
                 }
             }
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    delegate.onWriteRowClicked(item, position);
-                }
-            });
+            holder.itemView.setOnClickListener(view1 -> delegate.onWriteRowClicked(item, position));
         }
 
     }

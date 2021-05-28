@@ -15,12 +15,9 @@ public class LaunchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                startActivity(new Intent(LaunchActivity.this, AuthenticationActivity.class));
-                finish();
-            }
+        new Handler().postDelayed(() -> {
+            startActivity(new Intent(LaunchActivity.this, AuthenticationActivity.class));
+            finish();
         }, 2500);
     }
 }

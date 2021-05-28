@@ -1,12 +1,9 @@
 package com.kocfleet.ui.activity;
 
-import android.content.ActivityNotFoundException;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -17,8 +14,6 @@ import com.kocfleet.ui.dialog.ActionDialog;
 import com.kocfleet.ui.dialog.AuthDialog;
 import com.kocfleet.utils.Constants;
 
-import java.io.File;
-
 public class MainActivity extends BaseActivity implements ActionDialog.UserActionDelegate {
 
     Button btnBoatCondition;
@@ -27,6 +22,7 @@ public class MainActivity extends BaseActivity implements ActionDialog.UserActio
     ActionDialog dialog;
     AuthDialog authDialog;
     Context context;
+    @SuppressLint("StaticFieldLeak")
     public static MainActivity instance;
 
     @Override
@@ -47,26 +43,17 @@ public class MainActivity extends BaseActivity implements ActionDialog.UserActio
     }
 
     private void clickListeners() {
-        btnBoatCondition.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog = new ActionDialog(context, Constants.CONDITION, MainActivity.this);
-                dialog.show();
-            }
+        btnBoatCondition.setOnClickListener(view -> {
+            dialog = new ActionDialog(context, Constants.CONDITION, MainActivity.this);
+            dialog.show();
         });
-        btnBoatCertificates.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog = new ActionDialog(context, Constants.CERTIFICATES, MainActivity.this);
-                dialog.show();
-            }
+        btnBoatCertificates.setOnClickListener(view -> {
+            dialog = new ActionDialog(context, Constants.CERTIFICATES, MainActivity.this);
+            dialog.show();
         });
-        btnSafetyEquipments.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog = new ActionDialog(context, Constants.EQUIPMENTS, MainActivity.this);
-                dialog.show();
-            }
+        btnSafetyEquipments.setOnClickListener(view -> {
+            dialog = new ActionDialog(context, Constants.EQUIPMENTS, MainActivity.this);
+            dialog.show();
         });
     }
 
@@ -81,17 +68,14 @@ public class MainActivity extends BaseActivity implements ActionDialog.UserActio
     private void showAuthenticationDialog(String fileName) {
         authDialog = new AuthDialog(this);
         authDialog.show();
-        authDialog.setDialogResult(new AuthDialog.OnDialogResult() {
-            @Override
-            public void finish(String username, String password) {
-                if(username.equals("Kuwait") &&
-                        password.equals("2040")) {
-                    authDialog.dismiss();
-                    createIntentForExcel(Constants.FILE_PATH_STRING, fileName, Constants.FILE_WRITE);
-                } else {
-                    Toast.makeText(MainActivity.this,
-                            "Wrong username or password!", Toast.LENGTH_SHORT).show();
-                }
+        authDialog.setDialogResult((username, password) -> {
+            if(username.equals("Kuwait") &&
+                    password.equals("2040")) {
+                authDialog.dismiss();
+                createIntentForExcel(Constants.FILE_PATH_STRING, fileName, Constants.FILE_WRITE);
+            } else {
+                Toast.makeText(MainActivity.this,
+                        "Wrong username or password!", Toast.LENGTH_SHORT).show();
             }
         });
     }

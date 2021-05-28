@@ -1,10 +1,8 @@
 package com.kocfleet.ui.activity.excel;
 
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -12,40 +10,36 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.kocfleet.R;
 import com.kocfleet.model.ExcelCellModel;
 import com.kocfleet.ui.RowClickListener;
 import com.kocfleet.ui.adapter.ExcelAdapter;
 import com.kocfleet.ui.adapter.ExcelWriteAdapter;
 import com.kocfleet.utils.Constants;
-import com.kocfleet.utils.ExcelUtil;
 import com.kocfleet.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ExcelMainActivity extends AppCompatActivity implements RowClickListener {
     public static final String TAG = ExcelMainActivity.class.getSimpleName();
     private Context mContext;
     String regex = "[0-9]+";
-    private List<Map<Integer, String>> readExcelList = new ArrayList<>();
-    private List<Map<Integer, ExcelCellModel>> rowList = new ArrayList<>();
-    private List<Map<String, Object>> clickedExcelList = new ArrayList<>();
-    private List<Map<String, String>> saveList = new ArrayList<>();
-    private List<Map<String, String>> editedList = new ArrayList<>();
-    private List<Map<Integer, ExcelCellModel>> finalExcelList = new ArrayList<>();
+    private final List<Map<Integer, String>> readExcelList = new ArrayList<>();
+    private final List<Map<Integer, ExcelCellModel>> rowList = new ArrayList<>();
+    private final List<Map<String, Object>> clickedExcelList = new ArrayList<>();
+    private final List<Map<String, String>> saveList = new ArrayList<>();
+    private final List<Map<String, String>> editedList = new ArrayList<>();
+    private final List<Map<Integer, ExcelCellModel>> finalExcelList = new ArrayList<>();
     private RecyclerView recyclerView;
     private ExcelAdapter excelAdapter;
     private Button saveButton;
@@ -56,8 +50,9 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     private int selectedRowPosition = 0;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private int selectedColor = 0;
-    private String[] colors = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
-    private String mColor = colors[selectedColor];
+    private int selectedColColor = 0;
+    private final String[] colors = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
+    private final String[] colorCol = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
 
 
     @Override
@@ -82,15 +77,12 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
         initViews();
 
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showLoading();
-                editedList.clear();
-                editedList.addAll(excelWriteAdapter.saveCodeHere());
-                if (editedList != null && !editedList.isEmpty())
-                    creatingNewListToSave();
-            }
+        saveButton.setOnClickListener(view -> {
+            showLoading();
+            editedList.clear();
+            editedList.addAll(excelWriteAdapter.saveCodeHere());
+            if (!editedList.isEmpty())
+                creatingNewListToSave();
         });
     }
 
@@ -153,12 +145,9 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             db.collection(fileName).document(fileName + "ROW" + i)
                     .set(saveList.get(i));
         }
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                hideLoading();
-                finish();
-            }
+        new Handler().postDelayed(() -> {
+            hideLoading();
+            finish();
         }, 2000);
     }
 
@@ -167,24 +156,21 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     private void initViews() {
 
         showLoading();
-        db.collection(fileName).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    int j = 0;
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        for (QueryDocumentSnapshot doc : task.getResult()) {
-                            if (doc.getId().equals(fileName + "ROW" + j)) {
-                                clickedExcelList.add(doc.getData());
-                            }
+        db.collection(fileName).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                int j = 0;
+                for (QueryDocumentSnapshot ignored : Objects.requireNonNull(task.getResult())) {
+                    for (QueryDocumentSnapshot doc : task.getResult()) {
+                        if (doc.getId().equals(fileName + "ROW" + j)) {
+                            clickedExcelList.add(doc.getData());
                         }
-                        j++;
                     }
-                    arrangeDataSequence();
-                } else {
-                    hideLoading();
-                    Toast.makeText(mContext, "Failed to load data", Toast.LENGTH_SHORT).show();
+                    j++;
                 }
+                arrangeDataSequence();
+            } else {
+                hideLoading();
+                Toast.makeText(mContext, "Failed to load data", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -215,7 +201,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         for (int j = 0; j < clickedExcelList.size(); j++) {
             map = new HashMap<>();
             int a = 0;
-            for (Map.Entry<String, Object> entry : clickedExcelList.get(j).entrySet()) {
+            for (Map.Entry<String, Object> ignored : clickedExcelList.get(j).entrySet()) {
                 for (Map.Entry<String, Object> entry2 : clickedExcelList.get(j).entrySet()) {
                     if (entry2.getKey().equals("cell" + a)) {
                         map.put(a, entry2.getValue().toString());
@@ -239,16 +225,17 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         Map<Integer, ExcelCellModel> map ;
         Map<Integer, String> map2 ;
         ExcelCellModel model ;
+
         for (int i = 0; i < readExcelList.size(); i++) {
             map = new HashMap<>();
             map2 = readExcelList.get(i);
             for (int j=0; j<readExcelList.get(i).size(); j++) {
                 model = new ExcelCellModel();
                 if (j == 1 || j == 2) {
-                    if (j != 2 && !map2.get(2).equals("")) {
+                    if (j != 2 && !Objects.equals(map2.get(2), "")) {
                         selectedColor = selectedColor + 1;
                     }
-                    mColor = colors[selectedColor % 4];
+                    String mColor = colors[selectedColor % 4];
                     model.setColor(mColor);
                 }
                 else {
@@ -258,7 +245,10 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
                     model.setColor("#cbf7c7");
                 }
                 if (i == 2 && !fileName.equals(Constants.CERTIFICATES)) {
-                    model.setColor("#4169E1");
+                    if(j%2 == 0)
+                        selectedColColor += 1;
+                    String mColorCol = colorCol[selectedColColor % 4];
+                    model.setColor(mColorCol);
                 }
                 model.setValue(map2.get(j)+"");
                 map.put(j, model);

@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -32,17 +31,13 @@ import top.defaults.drawabletoolbox.DrawableBuilder;
 
 
 public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>, BaseViewHolder> {
-    private RowClickListener delegate;
+    private final RowClickListener delegate;
     List<Map<Integer, ExcelCellModel>> data;
-    private int isColumnClick;
-    private String regDate = "[0-9]{2}-^[a-zA-Z]*$-[0-9]{2}";
-
+    private final int isColumnClick;
+    private final String regDate = "[0-9]{2}-[0-9]{2}-[0-9]{2}";
     private int selectedColor = 0;
-    private String[] colors = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
-    private String[] hColors = new String[]{"#f0b099", "#afb3e9"};
-    private String mColor = colors[selectedColor];
-    private String mHColor = hColors[selectedColor];
-    private String filename;
+    private final String[] colors = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
+    private final String filename;
 
     public ExcelAdapter(@Nullable List<Map<Integer, ExcelCellModel>> data, RowClickListener delegate, int isColumnClick, String filename) {
         super(R.layout.template1_item, data);
@@ -67,7 +62,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
                 textView.setGravity(Gravity.CENTER);
                 textView.setTextColor(ContextCompat.getColor(mContext, R.color.blue));
                 textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
-                textView.setText(item.get(0).getValue());
+                textView.setText(Objects.requireNonNull(item.get(0)).getValue());
                 textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
                 textView.setPadding(10, 10, 10, 10);
                 textView.setBackground(getBackgroundDrawable("#ffffff"));
@@ -78,56 +73,44 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
                     textView.setTextSize(13);
                     textView.setGravity(Gravity.CENTER);
                     textView.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                    textView.setText(item.get(i).getValue());
+                    textView.setText(Objects.requireNonNull(item.get(i)).getValue());
                     textView.setLayoutParams(layoutParams);
                     textView.setPadding(10, 10, 10, 10);
-                    if (item.get(i).getValue().toLowerCase().equals("in commission") || item.get(i).getValue().toUpperCase().equals("OK"))
+                    if (Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("in commission")
+                            || Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("OK"))
                         textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-                    else if (item.get(i).getValue().toLowerCase().equals("out of commission") || item.get(i).getValue().toLowerCase().equals("not ok") || item.get(i).getValue().toLowerCase().equals("empty" ))
+                    else if (Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("out of commission")
+                            || Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("not ok")
+                            || Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("empty" ))
                         textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                     else
-                        textView.setBackground(getBackgroundDrawable(item.get(i).getColor()));
+                        textView.setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(i)).getColor()));
 
                     if(filename != null && filename.equals(Constants.CERTIFICATES)) {
                         if(helper.getLayoutPosition() == 1) {
                             int finalI = i;
-                            textView.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    delegate.onColumnCLicked(finalI);
-                                }
-                            });
-                            textView.setBackground(getBackgroundDrawable("#4169E1"));
+                            textView.setOnClickListener(view1 -> delegate.onColumnCLicked(finalI));
+                            textView.setBackground(getBackgroundDrawable(setColor(i)));
                         }
                         if(i == 2 && helper.getLayoutPosition() != 1)
                             textView.setBackground(getBackgroundDrawable("#FFFFFF"));
                     } else {
                         if (helper.getLayoutPosition() == 2) {
                             int finalI = i;
-                            textView.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    delegate.onColumnCLicked(finalI);
-                                }
-                            });
+                            textView.setOnClickListener(view12 -> delegate.onColumnCLicked(finalI));
                         }
                     }
 
 
-                    helper.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            delegate.onRowClicked(item);
-                        }
-                    });
+                    helper.itemView.setOnClickListener(view13 -> delegate.onRowClicked(item));
 
                     if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
                         SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
                         Date date = null;
                         try {
-                            date = formatter.parse(Objects.requireNonNull(item.get(i).getValue()));
-                        } catch (ParseException e) {
+                            date = formatter.parse(Objects.requireNonNull(item.get(i)).getValue());
+                        } catch (ParseException ignored) {
                         }
                         if (matchDates(date) < 1) {
                             textView.setBackground(getBackgroundDrawable("#FFFF0000"));
@@ -145,15 +128,18 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
                 textView.setTextSize(13);
                 textView.setGravity(Gravity.CENTER);
                 textView.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                textView.setText(item.get(i).getValue());
+                textView.setText(Objects.requireNonNull(item.get(i)).getValue());
                 textView.setLayoutParams(layoutParams);
                 textView.setPadding(10, 10, 10, 10);
-                if (item.get(i).getValue().toUpperCase().equals("IN COMMISSION") || item.get(i).getValue().toUpperCase().equals("OK"))
+                if (Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("IN COMMISSION")
+                        || Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("OK"))
                     textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-                else if (item.get(i).getValue().toUpperCase().equals("OUT OF COMMISSION") || item.get(i).getValue().toUpperCase().equals("NOT OK") || item.get(i).getValue().toLowerCase().equals("empty" ))
+                else if (Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("OUT OF COMMISSION")
+                        || Objects.requireNonNull(item.get(i)).getValue().toUpperCase().equals("NOT OK")
+                        || Objects.requireNonNull(item.get(i)).getValue().toLowerCase().equals("empty" ))
                     textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                 else
-                    textView.setBackground(getBackgroundDrawable(item.get(i).getColor()));
+                    textView.setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(i)).getColor()));
 
                 view.addView(textView);
             }
@@ -164,22 +150,25 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
             textView.setTextSize(13);
             textView.setGravity(Gravity.CENTER);
             textView.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-            textView.setText(item.get(isColumnClick).getValue());
+            textView.setText(Objects.requireNonNull(item.get(isColumnClick)).getValue());
             textView.setLayoutParams(layoutParams);
             textView.setPadding(10, 10, 10, 10);
-            if (item.get(isColumnClick).getValue().toUpperCase().equals("IN COMMISSION") || item.get(isColumnClick).getValue().toUpperCase().equals("OK"))
+            if (Objects.requireNonNull(item.get(isColumnClick)).getValue().toUpperCase().equals("IN COMMISSION")
+                    || Objects.requireNonNull(item.get(isColumnClick)).getValue().toUpperCase().equals("OK"))
                 textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-            else if (item.get(isColumnClick).getValue().toUpperCase().equals("OUT OF COMMISSION") || item.get(isColumnClick).getValue().toUpperCase().equals("NOT OK") || item.get(isColumnClick).getValue().toLowerCase().equals("empty" ))
+            else if (Objects.requireNonNull(item.get(isColumnClick)).getValue().toUpperCase().equals("OUT OF COMMISSION")
+                    || Objects.requireNonNull(item.get(isColumnClick)).getValue().toUpperCase().equals("NOT OK")
+                    || Objects.requireNonNull(item.get(isColumnClick)).getValue().toLowerCase().equals("empty" ))
                 textView.setBackground(getBackgroundDrawable("#FFFF0000"));
             else
-                textView.setBackground(getBackgroundDrawable(item.get(isColumnClick).getColor()));
+                textView.setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(isColumnClick)).getColor()));
             if (Objects.requireNonNull(item.get(isColumnClick)).getValue().matches(regDate)) {
                 @SuppressLint("SimpleDateFormat")
                 SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
                 Date date = null;
                 try {
-                    date = formatter.parse(Objects.requireNonNull(item.get(isColumnClick).getValue()));
-                } catch (ParseException e) {
+                    date = formatter.parse(Objects.requireNonNull(Objects.requireNonNull(item.get(isColumnClick)).getValue()));
+                } catch (ParseException ignored) {
                 }
                 if (matchDates(date) < 1) {
                     textView.setBackground(getBackgroundDrawable("#FFFF0000"));
@@ -209,22 +198,25 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
         textView.setTextSize(13);
         textView.setGravity(Gravity.CENTER);
         textView.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-        textView.setText(item.get(additionalRow).getValue());
+        textView.setText(Objects.requireNonNull(item.get(additionalRow)).getValue());
         textView.setLayoutParams(layoutParams);
         textView.setPadding(10, 10, 10, 10);
-        if (item.get(additionalRow).getValue().toUpperCase().equals("IN COMMISSION") || item.get(additionalRow).getValue().toUpperCase().equals("OK"))
+        if (Objects.requireNonNull(item.get(additionalRow)).getValue().toUpperCase().equals("IN COMMISSION")
+                || Objects.requireNonNull(item.get(additionalRow)).getValue().toUpperCase().equals("OK"))
             textView.setBackground(getBackgroundDrawable("#FF00FF00"));
-        else if (item.get(additionalRow).getValue().toUpperCase().equals("OUT OF COMMISSION") || item.get(additionalRow).getValue().toUpperCase().equals("NOT OK") || item.get(additionalRow).getValue().toLowerCase().equals("empty" ))
+        else if (Objects.requireNonNull(item.get(additionalRow)).getValue().toUpperCase().equals("OUT OF COMMISSION")
+                || Objects.requireNonNull(item.get(additionalRow)).getValue().toUpperCase().equals("NOT OK")
+                || Objects.requireNonNull(item.get(additionalRow)).getValue().toLowerCase().equals("empty" ))
             textView.setBackground(getBackgroundDrawable("#FFFF0000"));
         else
-            textView.setBackground(getBackgroundDrawable(item.get(additionalRow).getColor()));
+            textView.setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(additionalRow)).getColor()));
         if (Objects.requireNonNull(item.get(additionalRow)).getValue().matches(regDate)) {
             @SuppressLint("SimpleDateFormat")
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
             Date date = null;
             try {
-                date = formatter.parse(Objects.requireNonNull(item.get(additionalRow).getValue()));
-            } catch (ParseException e) {
+                date = formatter.parse(Objects.requireNonNull(Objects.requireNonNull(item.get(additionalRow)).getValue()));
+            } catch (ParseException ignored) {
             }
             if (matchDates(date) < 1) {
                 textView.setBackground(getBackgroundDrawable("#FFFF0000"));
@@ -244,6 +236,12 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
         int m2 = calDate.get(Calendar.YEAR) * 12 + calDate.get(Calendar.MONTH);
 
         return m2 - m1;
+    }
+
+    private String setColor(int j) {
+        if(j%2 == 0)
+            selectedColor += 1;
+        return colors[selectedColor % 4];
     }
 
     private Drawable getBackgroundDrawable(String color) {
