@@ -49,14 +49,14 @@ public class ExcelUtil {
             return null;
         }
         extString = filePath.substring(filePath.lastIndexOf("."));
-        InputStream is = null;
+        InputStream is;
         try {
             //if(fileName.equals(Constants.BOATS_CONDITION))
             /*else if(fileName.equals(Constants.BOATS_CERTIFICATES))
                 is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.boats_certificates);
             else
                 is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.safety_equipment);*/
-            is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.safety_equipments);
+            is = KocfleetApplication.getAppContext().getResources().openRawResource(R.raw.boats_certificates);
 
             Log.i(TAG, "readExcel: " + extString);
             if (".xls".equals(extString)) {

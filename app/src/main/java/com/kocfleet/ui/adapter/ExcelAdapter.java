@@ -106,7 +106,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
 
                     if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
                         Date date = null;
                         try {
                             date = formatter.parse(Objects.requireNonNull(item.get(i)).getValue());
@@ -122,7 +122,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
         } else {
 
             for (int i = 0; i < 3; i++) {
-                if(filename.equals(Constants.CERTIFICATES) && i == 2)
+                if(filename.equals(Constants.CERTIFICATES) && i > 1)
                     break;
                 TextView textView = new TextView(mContext);
                 textView.setTextSize(13);
@@ -160,11 +160,13 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
                     || Objects.requireNonNull(item.get(isColumnClick)).getValue().toUpperCase().equals("NOT OK")
                     || Objects.requireNonNull(item.get(isColumnClick)).getValue().toLowerCase().equals("empty" ))
                 textView.setBackground(getBackgroundDrawable("#FFFF0000"));
+            else if(filename.equals(Constants.CERTIFICATES) && isColumnClick == 2)
+                textView.setBackground(getBackgroundDrawable("#ffffff"));
             else
                 textView.setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(isColumnClick)).getColor()));
             if (Objects.requireNonNull(item.get(isColumnClick)).getValue().matches(regDate)) {
                 @SuppressLint("SimpleDateFormat")
-                SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
                 Date date = null;
                 try {
                     date = formatter.parse(Objects.requireNonNull(Objects.requireNonNull(item.get(isColumnClick)).getValue()));
@@ -212,7 +214,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
             textView.setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(additionalRow)).getColor()));
         if (Objects.requireNonNull(item.get(additionalRow)).getValue().matches(regDate)) {
             @SuppressLint("SimpleDateFormat")
-            SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
             Date date = null;
             try {
                 date = formatter.parse(Objects.requireNonNull(Objects.requireNonNull(item.get(additionalRow)).getValue()));

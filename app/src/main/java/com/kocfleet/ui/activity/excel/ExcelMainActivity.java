@@ -22,6 +22,7 @@ import com.kocfleet.ui.RowClickListener;
 import com.kocfleet.ui.adapter.ExcelAdapter;
 import com.kocfleet.ui.adapter.ExcelWriteAdapter;
 import com.kocfleet.utils.Constants;
+import com.kocfleet.utils.ExcelUtil;
 import com.kocfleet.utils.Utils;
 
 import java.util.ArrayList;
@@ -34,12 +35,14 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     public static final String TAG = ExcelMainActivity.class.getSimpleName();
     private Context mContext;
     String regex = "[0-9]+";
-    private final List<Map<Integer, String>> readExcelList = new ArrayList<>();
-    private final List<Map<Integer, ExcelCellModel>> rowList = new ArrayList<>();
+
     private final List<Map<String, Object>> clickedExcelList = new ArrayList<>();
+    private final List<Map<Integer, String>> readExcelList = new ArrayList<>();
     private final List<Map<String, String>> saveList = new ArrayList<>();
     private final List<Map<String, String>> editedList = new ArrayList<>();
+    private final List<Map<Integer, ExcelCellModel>> rowList = new ArrayList<>();
     private final List<Map<Integer, ExcelCellModel>> finalExcelList = new ArrayList<>();
+
     private RecyclerView recyclerView;
     private ExcelAdapter excelAdapter;
     private Button saveButton;
@@ -48,11 +51,17 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     private ProgressDialog mProgressDialog;
     private String fileName;
     private int selectedRowPosition = 0;
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     private int selectedColor = 0;
     private int selectedColColor = 0;
+    private int certSelectedColColor = 0;
+    private int certSelectedRowColor = 0;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     private final String[] colors = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
     private final String[] colorCol = new String[]{"#eefdec", "#c7c7c7", "#f0b099", "#afb3e9"};
+    private final String[] certColColor = new String[]{"#ff0000", "#cbf7c7", "#c7d4f7"};
+    private final String[] certRowColor = new String[]{"#eefdec", "#c7c7c7"};
 
 
     @Override
@@ -83,6 +92,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             editedList.addAll(excelWriteAdapter.saveCodeHere());
             if (!editedList.isEmpty())
                 creatingNewListToSave();
+            //Log.d(TAG, "onCreate: ");
         });
     }
 
@@ -97,13 +107,14 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
                 map.put("cell" + a, entry.getValue().getValue());
                 a++;
             }
-            if(j == selectedRowPosition) {
+            if (j == selectedRowPosition) {
                 if (fileName.equals(Constants.EQUIPMENTS))
+                    saveList.add(j, editedList.get(3));
+                else if(fileName.equals(Constants.CONDITION))
                     saveList.add(j, editedList.get(2));
                 else
                     saveList.add(j, editedList.get(1));
-            }
-            else
+            } else
                 saveList.add(j, map);
         }
         if (fileName.equals(Constants.EQUIPMENTS)) {
@@ -175,7 +186,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         });
     }
 
-    /*private void importExcelDeal(String path, String fileName) {
+    private void importExcelDeal(String path, String fileName) {
         new Thread(() -> {
 
             List<Map<String, String>> readExcelNew = ExcelUtil.readExcelNew(mContext, path, fileName);
@@ -183,7 +194,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
             if (readExcelNew != null && readExcelNew.size() > 0) {
                 for (int i = 0; i < readExcelNew.size(); i++) {
-                    db.collection("equipments").document("equipmentsROW"+i).set(readExcelNew.get(i));
+                    db.collection("certificates").document("certificatesROW"+i).set(readExcelNew.get(i));
                 }
 
                 Log.i(TAG, "run: successfully imported");
@@ -194,7 +205,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
                 });
             }
         }).start();
-    }*/
+    }
 
     private void arrangeDataSequence() {
         Map<Integer, String> map;
@@ -222,35 +233,49 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     }
 
     private void addColorsToList() {
-        Map<Integer, ExcelCellModel> map ;
-        Map<Integer, String> map2 ;
-        ExcelCellModel model ;
+        Map<Integer, ExcelCellModel> map;
+        Map<Integer, String> map2;
+        ExcelCellModel model;
 
         for (int i = 0; i < readExcelList.size(); i++) {
             map = new HashMap<>();
             map2 = readExcelList.get(i);
-            for (int j=0; j<readExcelList.get(i).size(); j++) {
+            for (int j = 0; j < readExcelList.get(i).size(); j++) {
                 model = new ExcelCellModel();
                 if (j == 1 || j == 2) {
                     if (j != 2 && !Objects.equals(map2.get(2), "")) {
                         selectedColor = selectedColor + 1;
+                        certSelectedRowColor += 1;
                     }
-                    String mColor = colors[selectedColor % 4];
+                    String mColor;
+                    if(fileName.equals(Constants.CERTIFICATES)) {
+                        mColor = certRowColor[certSelectedRowColor % 2];
+                    } else {
+                        mColor = colors[selectedColor % 4];
+                    }
                     model.setColor(mColor);
-                }
-                else {
+                } else {
                     model.setColor("#FFFFFF");
                 }
                 if (j == 0) {
                     model.setColor("#cbf7c7");
                 }
-                if (i == 2 && !fileName.equals(Constants.CERTIFICATES)) {
-                    if(j%2 == 0)
+                if (i == 2 && j > 2 && fileName.equals(Constants.EQUIPMENTS)) {
+                    if (j < 44)
+                        certSelectedColColor = 0;
+                    else if (j > 44 && j < 80)
+                        certSelectedColColor = 1;
+                    else if (j > 80)
+                        certSelectedColColor = 2;
+                    String mColorCol = certColColor[certSelectedColColor % 3];
+                    model.setColor(mColorCol);
+                } else if (i == 2 && !fileName.equals(Constants.CERTIFICATES)) {
+                    if (j % 2 == 0)
                         selectedColColor += 1;
                     String mColorCol = colorCol[selectedColColor % 4];
                     model.setColor(mColorCol);
                 }
-                model.setValue(map2.get(j)+"");
+                model.setValue(map2.get(j) + "");
                 map.put(j, model);
             }
             finalExcelList.add(map);
@@ -278,8 +303,9 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         if (rowList.isEmpty()) {
             rowList.add(finalExcelList.get(0));
             rowList.add(finalExcelList.get(1));
-            rowList.add(finalExcelList.get(2));
-            if (fileName.equals(Constants.EQUIPMENTS) || fileName.equals(Constants.CERTIFICATES)) {
+            if(!fileName.equals(Constants.CERTIFICATES))
+                rowList.add(finalExcelList.get(2));
+            if (fileName.equals(Constants.EQUIPMENTS)) {
                 rowList.add(finalExcelList.get(3));
             }
             rowList.add(clickedRow);
@@ -297,7 +323,8 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         if (rowList.isEmpty()) {
             rowList.add(finalExcelList.get(0));
             rowList.add(finalExcelList.get(1));
-            rowList.add(finalExcelList.get(2));
+            if(!fileName.equals(Constants.CERTIFICATES))
+                rowList.add(finalExcelList.get(2));
             if (fileName.equals(Constants.EQUIPMENTS)) {
                 rowList.add(finalExcelList.get(3));
             }
@@ -311,7 +338,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
     @Override
     public void onColumnCLicked(int position) {
-        rowList.add(finalExcelList.get(position));
+        rowList.add(finalExcelList.get(0));
         excelAdapter = new ExcelAdapter(finalExcelList, this, position, fileName);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);

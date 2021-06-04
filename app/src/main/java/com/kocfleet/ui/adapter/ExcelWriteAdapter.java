@@ -70,9 +70,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                 value.put("cell" + j, editTexts.get(et_count).getText().toString());
                 et_count++;
             }
-            /*if (i < 5) {
-                exportExcel.add(value);
-            } else if (checkValue(value, exportExcel))*/
+
             exportExcel.add(value);
         }
         return exportExcel;
@@ -90,22 +88,6 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
 
         return m2 - m1;
     }
-
-    /*private boolean checkValue(Map<String, String> value, List<Map<String, String>> exportExcel) {
-        for (Map.Entry<String, String> entry : exportExcel.get(exportExcel.size() - 1).entrySet()) {
-            if (entry.getKey().equals("cell0")) {
-                for (Map.Entry<String, String> entry2 : value.entrySet()) {
-                    if (entry2.getKey().equals("cell0")) {
-                        if (!entry2.getValue().isEmpty() && entry2.getValue().matches(numFormat) &&
-                                Integer.parseInt(entry.getValue()) < Integer.parseInt(entry2.getValue())) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }*/
 
     @NonNull
     @Override
@@ -126,7 +108,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                         LinearLayout.LayoutParams.MATCH_PARENT
                 );
 
-        if (position == 0 || position == 1) {
+        if (position == 0) {
             TextView textView = new TextView(mContext);
             textView.setTextSize(13);
             textView.setGravity(Gravity.CENTER);
@@ -160,7 +142,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
 
                     if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
                         Date date = null;
                         try {
                             date = formatter.parse(Objects.requireNonNull(Objects.requireNonNull(item.get(i)).getValue()));
@@ -190,7 +172,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
 
                     if (Objects.requireNonNull(item.get(i)).getValue().matches(regDate)) {
                         @SuppressLint("SimpleDateFormat")
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
                         Date date = null;
                         try {
                             date = formatter.parse(Objects.requireNonNull(item.get(i)).getValue());
