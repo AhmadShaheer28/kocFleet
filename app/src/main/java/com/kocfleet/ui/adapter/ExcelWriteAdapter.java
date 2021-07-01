@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.kocfleet.R;
 import com.kocfleet.model.ExcelCellModel;
 import com.kocfleet.ui.RowClickListener;
+import com.kocfleet.utils.Constants;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -41,12 +42,21 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
     int etSize = 0;
     Context mContext;
     boolean isEditable;
+    private final String filename;
+    private final int isColumnClicked;
+    private final int loopForSheetCol;
+    private final int sheetColPosition;
 
-    public ExcelWriteAdapter(@Nullable List<Map<Integer, ExcelCellModel>> data, Context context, RowClickListener delegate, boolean isEditable) {
+    public ExcelWriteAdapter(@Nullable List<Map<Integer, ExcelCellModel>> data, Context context,
+                             RowClickListener delegate, boolean isEditable, String filename, int isColumnClicked) {
         this.data = data;
         mContext = context;
         this.delegate = delegate;
         this.isEditable = isEditable;
+        this.filename = filename;
+        this.isColumnClicked = isColumnClicked;
+        loopForSheetCol = filename.equals(Constants.CERTIFICATES) ? 2 : 3;
+        sheetColPosition = filename.equals(Constants.CERTIFICATES) ? 0 : 2;
     }
 
     private Drawable getBackgroundDrawable(String color) {
@@ -61,13 +71,37 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
         return drawable;
     }
 
-    public List<Map<String, String>> saveCodeHere() {
+    public List<Map<String, String>> saveRowDataHere() {
         int et_count = 0;
         List<Map<String, String>> exportExcel = new ArrayList<>();
         for (int i = 0; i < (editTexts.size() / data.get(0).size()); i++) {
             Map<String, String> value = new HashMap<>();
             for (int j = 0; j < data.get(0).size(); j++) {
                 value.put("cell" + j, editTexts.get(et_count).getText().toString());
+                et_count++;
+            }
+
+            exportExcel.add(value);
+        }
+        return exportExcel;
+    }
+
+    public List<Map<String, String>> saveColDataHere() {
+        int et_count = 0;
+        int editedCol = filename.equals(Constants.CERTIFICATES) ? 2 : 3;
+        int loopCol = filename.equals(Constants.CERTIFICATES) ? 3 : 4;
+        List<Map<String, String>> exportExcel = new ArrayList<>();
+        for (int i = 0; i < data.size(); i++) {
+            Map<String, String> value = new HashMap<>();
+            for (int j = 0; j < loopCol; j++) {
+                if (j == editedCol) {
+                    if (et_count <= etSize) {
+                        value.put("cell" + j, editTexts.get(et_count).getText().toString());
+                    } else {
+                        value.put("cell" + j, Objects.requireNonNull(data.get(i).get(j)).getValue());
+                    }
+                }
+
                 et_count++;
             }
 
@@ -107,8 +141,52 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                         300,
                         LinearLayout.LayoutParams.MATCH_PARENT
                 );
+        if (isColumnClicked != -1) {
+            String regDate = "[0-9]{2}-[0-9]{2}-[0-9]{2}";
+            for (int i = 0; i< loopForSheetCol; i++) {
+                editTexts.add(new EditText(mContext));
+                editTexts.get(etSize).setTextSize(13);
+                editTexts.get(etSize).setGravity(Gravity.CENTER);
+                editTexts.get(etSize).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                editTexts.get(etSize).setText(Objects.requireNonNull(item.get(i)).getValue(), TextView.BufferType.EDITABLE);
+                editTexts.get(etSize).setLayoutParams(layoutParams);
+                editTexts.get(etSize).setPadding(10, 10, 10, 10);
+                editTexts.get(etSize).setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(i)).getColor()));
+                view.addView(editTexts.get(etSize));
+                etSize += 1;
+            }
+            editTexts.add(new EditText(mContext));
+            editTexts.get(etSize).setTextSize(13);
+            editTexts.get(etSize).setGravity(Gravity.CENTER);
+            editTexts.get(etSize).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+            editTexts.get(etSize).setText(Objects.requireNonNull(item.get(isColumnClicked)).getValue(), TextView.BufferType.EDITABLE);
+            editTexts.get(etSize).setLayoutParams(layoutParams);
+            editTexts.get(etSize).setPadding(10, 10, 10, 10);
+            if (Objects.requireNonNull(item.get(isColumnClicked)).getValue().toUpperCase().equals("IN COMMISSION")
+                    || Objects.requireNonNull(item.get(isColumnClicked)).getValue().toUpperCase().equals("OK"))
+                editTexts.get(etSize).setBackground(getBackgroundDrawable("#FF00FF00"));
+            else if (Objects.requireNonNull(item.get(isColumnClicked)).getValue().toUpperCase().equals("OUT OF COMMISSION")
+                    || Objects.requireNonNull(item.get(isColumnClicked)).getValue().toUpperCase().equals("NOT OK")
+                    || Objects.requireNonNull(item.get(isColumnClicked)).getValue().toLowerCase().equals("empty"))
+                editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
+            else
+                editTexts.get(etSize).setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(isColumnClicked)).getColor()));
 
-        if (position == 0) {
+            if (Objects.requireNonNull(item.get(isColumnClicked)).getValue().matches(regDate)) {
+                @SuppressLint("SimpleDateFormat")
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy");
+                Date date = null;
+                try {
+                    date = formatter.parse(Objects.requireNonNull(item.get(isColumnClicked)).getValue());
+                } catch (ParseException ignored) { }
+                if (matchDates(date) < 1) {
+                    editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
+                }
+            }
+
+            view.addView(editTexts.get(etSize));
+            etSize += 1;
+        } else if (position == 0 && !filename.equals(Constants.CERTIFICATES)) {
             TextView textView = new TextView(mContext);
             textView.setTextSize(13);
             textView.setGravity(Gravity.CENTER);
@@ -151,6 +229,12 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                             textView.setBackground(getBackgroundDrawable("#FFFF0000"));
                         }
                     }
+
+                    if (position == sheetColPosition) {
+                        int finalI = i;
+                        textView.setOnClickListener( view4 -> delegate.onWriteColumnClicked(finalI));
+                    }
+
                     view.addView(textView);
                 } else {
                     editTexts.add(new EditText(mContext));

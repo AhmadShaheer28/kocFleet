@@ -51,6 +51,8 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     private ProgressDialog mProgressDialog;
     private String fileName;
     private int selectedRowPosition = 0;
+    private int selectedColPosition = 0;
+    private boolean hasSelectedRow;
 
     private int selectedColor = 0;
     private int selectedColColor = 0;
@@ -89,16 +91,21 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         saveButton.setOnClickListener(view -> {
             showLoading();
             editedList.clear();
-            editedList.addAll(excelWriteAdapter.saveCodeHere());
-            if (!editedList.isEmpty())
-                creatingNewListToSave();
-            //Log.d(TAG, "onCreate: ");
+            if (hasSelectedRow) {
+                editedList.addAll(excelWriteAdapter.saveRowDataHere());
+                if (!editedList.isEmpty())
+                    creatingNewListToSaveRowData();
+            } else {
+                editedList.addAll(excelWriteAdapter.saveColDataHere());
+                creatingNewListToSaveColData();
+                Log.d(TAG, "onCreate: ");
+            }
         });
     }
 
     /* Writing methods start  */
 
-    private void creatingNewListToSave() {
+    private void creatingNewListToSaveRowData() {
         Map<String, String> map;
         for (int j = 0; j < finalExcelList.size(); j++) {
             map = new HashMap<>();
@@ -123,6 +130,25 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         saveToDataBase();
     }
 
+    private void creatingNewListToSaveColData() {
+        Map<String, String> map;
+        int cellNo = fileName.equals(Constants.CERTIFICATES) ? 2 : 3;
+        for (int j = 0; j < finalExcelList.size(); j++) {
+            map = new HashMap<>();
+            int a = 0;
+            for (Map.Entry<Integer, ExcelCellModel> entry : finalExcelList.get(j).entrySet()) {
+                if (a == selectedColPosition) {
+                    map.put("cell" + a, editedList.get(j).get("cell"+cellNo));
+                } else {
+                    map.put("cell" + a, entry.getValue().getValue());
+                }
+                a++;
+            }
+            saveList.add(j, map);
+        }
+        saveToDataBase();
+    }
+
     private void saveTotalQuantity() {
         int col = 3;
         for (int i = 3; i < saveList.get(0).size(); i++) {
@@ -130,7 +156,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             for (int j = 4; j < saveList.size() - 1; j++) {
                 Map<String, String> mMap = saveList.get(j);
                 for (Map.Entry<String, String> entry : mMap.entrySet()) {
-                    if (entry.getKey().equals("cell" + col) && entry.getValue().matches(regex)) {
+                    if (entry.getKey().equals("cell" + col) && entry.getValue().trim().matches(regex)) {
                         number += Integer.parseInt(entry.getValue());
                         break;
                     }
@@ -138,7 +164,6 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
             }
             replaceTotalQuantityValue(col, number);
             col++;
-            Log.d(TAG, "saveTotalQuantity: " + number);
         }
     }
 
@@ -159,7 +184,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         new Handler().postDelayed(() -> {
             hideLoading();
             finish();
-        }, 2000);
+        }, 3000);
     }
 
     /* Writing methods end  */
@@ -292,7 +317,7 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
     private void setWriteAdapter() {
         saveButton.setVisibility(View.GONE);
-        excelWriteAdapter = new ExcelWriteAdapter(finalExcelList, this, this, false);
+        excelWriteAdapter = new ExcelWriteAdapter(finalExcelList, this, this, false, fileName, -1);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setAdapter(excelWriteAdapter);
@@ -302,9 +327,10 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
     public void onRowClicked(Map<Integer, ExcelCellModel> clickedRow) {
         if (rowList.isEmpty()) {
             rowList.add(finalExcelList.get(0));
-            rowList.add(finalExcelList.get(1));
-            if(!fileName.equals(Constants.CERTIFICATES))
+            if(!fileName.equals(Constants.CERTIFICATES)) {
+                rowList.add(finalExcelList.get(1));
                 rowList.add(finalExcelList.get(2));
+            }
             if (fileName.equals(Constants.EQUIPMENTS)) {
                 rowList.add(finalExcelList.get(3));
             }
@@ -318,18 +344,20 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
 
     @Override
     public void onWriteRowClicked(Map<Integer, ExcelCellModel> clickedRow, int position) {
+        hasSelectedRow = true;
         saveButton.setVisibility(View.VISIBLE);
         selectedRowPosition = position;
         if (rowList.isEmpty()) {
             rowList.add(finalExcelList.get(0));
-            rowList.add(finalExcelList.get(1));
-            if(!fileName.equals(Constants.CERTIFICATES))
+            if(!fileName.equals(Constants.CERTIFICATES)) {
+                rowList.add(finalExcelList.get(1));
                 rowList.add(finalExcelList.get(2));
+            }
             if (fileName.equals(Constants.EQUIPMENTS)) {
                 rowList.add(finalExcelList.get(3));
             }
             rowList.add(clickedRow);
-            excelWriteAdapter = new ExcelWriteAdapter(rowList, this, this, true);
+            excelWriteAdapter = new ExcelWriteAdapter(rowList, this, this, true, fileName, -1);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             recyclerView.setNestedScrollingEnabled(false);
             recyclerView.setAdapter(excelWriteAdapter);
@@ -343,6 +371,18 @@ public class ExcelMainActivity extends AppCompatActivity implements RowClickList
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setAdapter(excelAdapter);
+    }
+
+    @Override
+    public void onWriteColumnClicked(int position) {
+        hasSelectedRow = false;
+        selectedColPosition = position;
+        saveButton.setVisibility(View.VISIBLE);
+        rowList.add(finalExcelList.get(0));
+        excelWriteAdapter = new ExcelWriteAdapter(finalExcelList, this, this, true, fileName, position);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setNestedScrollingEnabled(false);
+        recyclerView.setAdapter(excelWriteAdapter);
     }
 
     @Override

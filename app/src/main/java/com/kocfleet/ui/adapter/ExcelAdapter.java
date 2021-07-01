@@ -56,7 +56,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
                 LinearLayout.LayoutParams.MATCH_PARENT);
 
         if (isColumnClick == -1) {
-            if (helper.getLayoutPosition() == 0) {
+            if (helper.getLayoutPosition() == 0 && !filename.equals(Constants.CERTIFICATES)) {
                 TextView textView = new TextView(mContext);
                 textView.setTextSize(13);
                 textView.setGravity(Gravity.CENTER);
@@ -87,7 +87,7 @@ public class ExcelAdapter extends BaseQuickAdapter<Map<Integer, ExcelCellModel>,
                         textView.setBackground(getBackgroundDrawable(Objects.requireNonNull(item.get(i)).getColor()));
 
                     if(filename != null && filename.equals(Constants.CERTIFICATES)) {
-                        if(helper.getLayoutPosition() == 1) {
+                        if(helper.getLayoutPosition() == 0) {
                             int finalI = i;
                             textView.setOnClickListener(view1 -> delegate.onColumnCLicked(finalI));
                             textView.setBackground(getBackgroundDrawable(setColor(i)));
