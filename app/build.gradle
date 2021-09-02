@@ -57,3 +57,5 @@ dependencies {
     //Drawable toolbox
     implementation 'com.github.duanhong169:drawabletoolbox:1.0.7'
 }
+
+// APK Password: Printer1

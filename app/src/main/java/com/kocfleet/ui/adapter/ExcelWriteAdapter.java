@@ -5,6 +5,9 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +42,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
     List<EditText> editTexts = new ArrayList<>();
     List<Map<Integer, ExcelCellModel>> data;
     private final RowClickListener delegate;
+    List<String> editedList = new ArrayList<>();
     int etSize = 0;
     Context mContext;
     boolean isEditable;
@@ -57,6 +61,10 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
         this.isColumnClicked = isColumnClicked;
         loopForSheetCol = filename.equals(Constants.CERTIFICATES) ? 2 : 3;
         sheetColPosition = filename.equals(Constants.CERTIFICATES) ? 0 : 2;
+        for (int i = 0; i< Objects.requireNonNull(data).size(); i++) {
+            if(isColumnClicked != -1)
+                editedList.add(Objects.requireNonNull(data.get(i).get(isColumnClicked)).getValue());
+        }
     }
 
     private Drawable getBackgroundDrawable(String color) {
@@ -87,7 +95,6 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
     }
 
     public List<Map<String, String>> saveColDataHere() {
-        int et_count = 0;
         int editedCol = filename.equals(Constants.CERTIFICATES) ? 2 : 3;
         int loopCol = filename.equals(Constants.CERTIFICATES) ? 3 : 4;
         List<Map<String, String>> exportExcel = new ArrayList<>();
@@ -95,14 +102,8 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
             Map<String, String> value = new HashMap<>();
             for (int j = 0; j < loopCol; j++) {
                 if (j == editedCol) {
-                    if (et_count <= etSize) {
-                        value.put("cell" + j, editTexts.get(et_count).getText().toString());
-                    } else {
-                        value.put("cell" + j, Objects.requireNonNull(data.get(i).get(j)).getValue());
-                    }
+                    value.put("cell" + j, editedList.get(i));
                 }
-
-                et_count++;
             }
 
             exportExcel.add(value);
@@ -162,6 +163,7 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
             editTexts.get(etSize).setText(Objects.requireNonNull(item.get(isColumnClicked)).getValue(), TextView.BufferType.EDITABLE);
             editTexts.get(etSize).setLayoutParams(layoutParams);
             editTexts.get(etSize).setPadding(10, 10, 10, 10);
+            editedList.set(position,Objects.requireNonNull(item.get(isColumnClicked)).getValue());
             if (Objects.requireNonNull(item.get(isColumnClicked)).getValue().toUpperCase().equals("IN COMMISSION")
                     || Objects.requireNonNull(item.get(isColumnClicked)).getValue().toUpperCase().equals("OK"))
                 editTexts.get(etSize).setBackground(getBackgroundDrawable("#FF00FF00"));
@@ -183,6 +185,26 @@ public class ExcelWriteAdapter extends RecyclerView.Adapter<ExcelWriteAdapter.Vi
                     editTexts.get(etSize).setBackground(getBackgroundDrawable("#FFFF0000"));
                 }
             }
+
+            editTexts.get(etSize).addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (s.length() != 0) {
+                        String str;
+                        str = s.toString();
+                        editedList.set(position, str);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
 
             view.addView(editTexts.get(etSize));
             etSize += 1;
